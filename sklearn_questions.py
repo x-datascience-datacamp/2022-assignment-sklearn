@@ -14,7 +14,9 @@ the Euclidean distance. The model will be evaluated with the accuracy (average
 number of samples corectly classified). You need to implement the `fit`,
 `predict` and `score` methods for this class. The code you write should pass
 the test we implemented. You can run the tests by calling at the root of the
-repo `pytest test_sklearn_questions.py`. Note that to be fully valid, a
+repo `pytest test_sklearn_questions.py`.
+
+ Note that to be fully valid, a
 scikit-learn estimator needs to check that the input given to `fit` and
 `predict` are correct using the `check_*` functions imported in the file.
 You can find more information on how they should be used in the following doc:
@@ -48,7 +50,6 @@ from sklearn.metrics.pairwise import pairwise_distances
 to compute distances between 2 sets of samples.
 """
 import numpy as np
-import pandas as pd
 
 from sklearn.base import BaseEstimator
 from sklearn.base import ClassifierMixin
@@ -57,8 +58,9 @@ from sklearn.model_selection import BaseCrossValidator
 
 from sklearn.utils.validation import check_X_y, check_is_fitted
 from sklearn.utils.validation import check_array
-from sklearn.utils.multiclass import check_classification_targets
-from sklearn.metrics.pairwise import pairwise_distances
+from sklearn.utils.multiclass import unique_labels
+
+from scipy.stats import mode
 
 
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
@@ -82,6 +84,14 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
+        # Check that X and y have correct shape
+        X, y = check_X_y(X, y)
+        # Store the classes seen during fit
+        self.classes_ = unique_labels(y)
+
+        self.X_ = X
+        self.y_ = y
+
         return self
 
     def predict(self, X):
@@ -97,7 +107,22 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
-        y_pred = np.zeros(X.shape[0])
+
+        # Check if fit has been called
+        check_is_fitted(self)
+
+        # Input validation
+        X = check_array(X)
+
+        soustrac_matrix = X[None, :, :] - self.X_[:, None, :]
+        distance_matrix = np.linalg.norm(soustrac_matrix, axis=-1)
+        args_nearest_matrix = np.argpartition(distance_matrix,
+                                              self.n_neighbors, axis=0)
+        nearest_matrix = args_nearest_matrix[:self.n_neighbors,
+                                             :]
+        nearest_class = self.y_[nearest_matrix]
+        y_pred = mode(nearest_class, axis=0)[0].squeeze()
+
         return y_pred
 
     def score(self, X, y):
@@ -115,7 +140,9 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        return 0.
+        y_predicted = self.predict(X)
+        accuracy = np.mean(y == y_predicted)
+        return accuracy
 
 
 class MonthlySplit(BaseCrossValidator):
@@ -155,7 +182,13 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        return 0
+        X = X.reset_index()
+        temps = X[self.time_col]
+        if np.issubdtype(temps.dtype, np.datetime64):
+            temps = temps.dt.to_period('M')
+            return temps.unique().shape[0] - 1
+        else:
+            raise ValueError(f'{self.time_col} should be of type datetime.')
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -178,11 +211,12 @@ class MonthlySplit(BaseCrossValidator):
             The testing set indices for that split.
         """
 
-        n_samples = X.shape[0]
         n_splits = self.get_n_splits(X, y, groups)
+        X = X.reset_index()
+        temps = X[self.time_col]
+        temps = temps.dt.to_period('M')
+        bins = np.sort(temps.unique())
         for i in range(n_splits):
-            idx_train = range(n_samples)
-            idx_test = range(n_samples)
-            yield (
-                idx_train, idx_test
-            )
+            train_idx = X[temps == bins[i]].index.to_numpy()
+            test_idx = X[temps == bins[i + 1]].index.to_numpy()
+            yield train_idx, test_idx
