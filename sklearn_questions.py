@@ -216,9 +216,7 @@ class MonthlySplit(BaseCrossValidator):
         n_splits = self.get_n_splits(X, y, groups)
 
         def agg_indexes(arraylike):
-            """
-            Aggregate indexes of a pd.DataFrame.
-            """
+            """Aggregate indexes of a pd.DataFrame."""
             return arraylike.index
 
         # resample and aggregate indexes
