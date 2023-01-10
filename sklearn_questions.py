@@ -60,7 +60,7 @@ from sklearn.utils.validation import check_X_y, check_is_fitted
 from sklearn.utils.validation import check_array
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.metrics.pairwise import pairwise_distances
-from statistics import mode
+from collections import Counter
 from pandas.core.dtypes.common import is_datetime64_any_dtype
 
 
@@ -87,10 +87,10 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         """
         # Check that X and y have correct shape
         X, y = check_X_y(X, y)
-
+        check_classification_targets(y)
         self.X_ = X
         self.y_ = y
-        self.n_feature_in_ = self.X_.shape[1]
+        self.n_features_in_ = X.shape[1]
         self.classes_ = unique_labels(y)
 
         return self
@@ -112,7 +112,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         X = check_array(X)
         distances = pairwise_distances(X, self.X_)
         ind_neighbors = distances.argsort(axis=1)[:, :self.n_neighbors]
-        y_pred = [mode(self.y_[ind_neighbors[x]])
+        y_pred = [Counter(self.y_[ind_neighbors[x]]).most_common(1)[0][0]
                   for x in range(len(ind_neighbors))]
 
         check_classification_targets(y_pred)
