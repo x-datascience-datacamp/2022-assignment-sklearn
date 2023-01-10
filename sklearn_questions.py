@@ -48,7 +48,6 @@ from sklearn.metrics.pairwise import pairwise_distances
 to compute distances between 2 sets of samples.
 """
 import numpy as np
-import pandas as pd
 
 from sklearn.base import BaseEstimator
 from sklearn.base import ClassifierMixin
@@ -57,11 +56,10 @@ from sklearn.model_selection import BaseCrossValidator
 
 from sklearn.utils.validation import check_X_y, check_is_fitted
 from sklearn.utils.validation import check_array
-from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.multiclass import unique_labels
-from sklearn.metrics.pairwise import pairwise_distances
 
 import scipy.stats as stats
+
 
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
     """KNearestNeighbors classifier."""
@@ -114,8 +112,11 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
             # Fetching the sample
             x_i = X[i]
 
-            # Computing euclidian distance of sample to other registered data points
-            euclidian_dist = np.array([np.linalg.norm(x_i - x_j) for x_j in self.X_])
+            # Computing euclidian distance of sample
+            # to other registered data points
+            euclidian_dist = np.array(
+                [np.linalg.norm(x_i - x_j) for x_j in self.X_]
+            )
             # Computing the indexes that would sort the array
             sorted_index = np.argsort(euclidian_dist)
             # The K first indexes are kept as the K-closest neighbours
@@ -123,7 +124,8 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
             # Fetching the labels of K-closest neighbours
             neighbours_labels = self.y_[k_neighbours_index]
 
-            # The sample label is the dominating one within the K-closest neighbours
+            # The sample label is the dominating one
+            # within the K-closest neighbours
             y_i = stats.mode(neighbours_labels)[0][0]
             # Saving the prediction of the sample
             y_pred[i] = y_i
@@ -151,17 +153,6 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score = np.sum(y_pred == y) / y.shape[0]
 
         return score
-
-
-from sklearn.datasets import make_classification
-from sklearn.model_selection import train_test_split
-
-X, y = make_classification(n_samples=200, n_features=20, random_state=42)
-X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
-
-knn = KNearestNeighbors(5)
-knn.fit(X_train, y_train)
-print("Accuracy:", knn.score(X_test, y_test))
 
 
 class MonthlySplit(BaseCrossValidator):
@@ -201,7 +192,21 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        return 0
+        # Resetting index to fetch the datetime indexes as a column
+        X = X.reset_index()
+        # Fetching the datetime column
+        dates = X[self.time_col]
+
+        # Computing the number of months by reformatting
+        # the datetimes as uplets of (year, month) year is
+        # necessary to prevent overlapping between years when counting
+        try:
+            years_months = dates.apply(lambda x: (x.year, x.month))
+        except AttributeError:
+            raise ValueError("time_col is not a column of datetimes.")
+
+        nb_splits = len(years_months.unique()) - 1
+        return nb_splits
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -223,12 +228,31 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-
-        n_samples = X.shape[0]
         n_splits = self.get_n_splits(X, y, groups)
+
+        # We reset the index to fetch the datetime column
+        X = X.reset_index()
+        # Fetching datetime column
+        dates = X[self.time_col]
+        # Mapping datetimes into (year, month) uplet at each datetime
+        years_months = dates.apply(lambda x: (x.year, x.month))
+        # Fetching unique months of the series
+        months = np.sort(years_months.unique())
+
+        # Building splits
         for i in range(n_splits):
-            idx_train = range(n_samples)
-            idx_test = range(n_samples)
-            yield (
-                idx_train, idx_test
-            )
+            # We look into the first month
+            year, month = months[i]
+            idx_train = X[
+                (dates.dt.year == year) &
+                (dates.dt.month == month)
+                ].index.tolist()
+
+            # We look into the second month
+            year, month = months[i + 1]
+            idx_test = X[
+                (dates.dt.year == year) &
+                (dates.dt.month == month)
+                ].index.tolist()
+
+            yield idx_train, idx_test
