@@ -66,7 +66,6 @@ def test_time_split(end_date, expected_splits, shuffle_data):
 
     # Test if the cross-validator works as expected even if
     # the data is 1d
-
     np.testing.assert_equal(
         list(cv.split(X, y)), list(cv.split(X_1d, y))
     )
