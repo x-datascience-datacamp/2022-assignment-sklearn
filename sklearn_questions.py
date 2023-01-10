@@ -81,11 +81,10 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
-        X, y = check_X_y(X, y)
-        check_classification_targets(y)
-        self.X_train_ = X
-        self.y_train_ = y
-        self.classes_ = np.unique(y)
+        self.classes_ = unique_labels(y)
+        self.X_converted_, self.y_converted_ \
+            = check_X_y(X, y)  # Checks X and y for consistent length
+
         # test
         return self
 
@@ -100,7 +99,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Class labels for each test data sample.
         """
-        check_is_fitted(self, ['X_train_', 'y_train_', 'classes_'])
+        check_is_fitted(self)
         X = check_array(X)
 
         res = []
