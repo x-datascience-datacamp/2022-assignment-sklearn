@@ -11,7 +11,7 @@ Detailed instructions for question 1:
 The nearest neighbor classifier predicts for a point X_i the target y_k of
 the training sample X_k which is the closest to X_i. We measure proximity with
 the Euclidean distance. The model will be evaluated with the accuracy (average
-number of samples corectly classified). You need to implement the `fit`,
+number of samples correctly classified). You need to implement the `fit`,
 `predict` and `score` methods for this class. The code you write should pass
 the test we implemented. You can run the tests by calling at the root of the
 repo `pytest test_sklearn_questions.py`. Note that to be fully valid, a
@@ -66,6 +66,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
 
     def __init__(self, n_neighbors=1):  # noqa: D107
         self.n_neighbors = n_neighbors
+        super().__init__()
 
     def fit(self, X, y):
         """Fitting function.
@@ -80,8 +81,20 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         Returns
         ----------
         self : instance of KNearestNeighbors
-            The current instance of the classifier
+            The current instance of the classifier.
         """
+
+        # Check that X and y have correct shape & dtypes
+        X, y = check_X_y(X, y)
+
+        # Check the training target
+        check_classification_targets(y)
+
+        # Fit the classifier by filling fitted attributes
+        self.classes_ = np.unique(y)
+        self._fit_y = y
+        self._fit_X = X
+
         return self
 
     def predict(self, X):
@@ -97,7 +110,29 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
+
+        ### Checks
+        # Check if fit has been called
+        check_is_fitted(self)
+
+        # Check the input
+        X = check_array(X)
+
+        ### Predict classes
+        # D[i, j] = euclidean distance from X_train[i] to X_predict[j]
+        # shape: (n_train_samples, n_test_samples)
+        D = pairwise_distances(self._fit_X, X)
+
+        # Fill predictions vector
         y_pred = np.zeros(X.shape[0])
+
+        for j in range(X.shape[0]):  # TODO: optimize?
+            n_smallest_dists_idx = np.argpartition(D[:, j], self.n_neighbors)
+            n_closest_classes = self._fit_y[n_smallest_dists_idx[: self.n_neighbors]]
+            classes, counts = np.unique(n_closest_classes, return_counts=True)
+            predicted_class = classes[np.argmax(counts)]
+            y_pred[j] = predicted_class
+
         return y_pred
 
     def score(self, X, y):
@@ -108,14 +143,15 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         X : ndarray, shape (n_samples, n_features)
             Data to score on.
         y : ndarray, shape (n_samples,)
-            target values.
+            Target values.
 
         Returns
         ----------
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        return 0.
+        accuracy = (self.predict(X) == y).sum() / y.shape[0]
+        return accuracy
 
 
 class MonthlySplit(BaseCrossValidator):
@@ -134,7 +170,7 @@ class MonthlySplit(BaseCrossValidator):
         To use the index as column just set `time_col` to `'index'`.
     """
 
-    def __init__(self, time_col='index'):  # noqa: D107
+    def __init__(self, time_col="index"):  # noqa: D107
         self.time_col = time_col
 
     def get_n_splits(self, X, y=None, groups=None):
@@ -183,6 +219,4 @@ class MonthlySplit(BaseCrossValidator):
         for i in range(n_splits):
             idx_train = range(n_samples)
             idx_test = range(n_samples)
-            yield (
-                idx_train, idx_test
-            )
+            yield (idx_train, idx_test)
