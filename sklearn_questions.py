@@ -103,17 +103,15 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         check_is_fitted(self, ['X_train_', 'y_train_', 'classes_'])
         X = check_array(X)
 
-        def most_common(lst):
-            '''Returns the most common element in a list'''
-            return max(set(lst), key=lst.count)
-
-        neighbors = []
-        for x in X:
-            distances = pairwise_distances(self.X_train_, [x])
-            y_sorted = [y for _, y in sorted(zip(distances, self.y_train_))]
-            neighbors.append(y_sorted[:self.n_neighbors])
-
-        return np.array(list(map(most_common, neighbors)))
+        res = []
+        n_X = len(X)
+        for i in range(n_X):
+            distances = pairwise_distances(self.X_train_, [X[i]]).flatten()
+            indexes = np.argsort(distances)[:self.n_neighbors]
+            labels = self.y_train_[indexes]
+            res.append(max(list(labels), key=list(labels).count))
+        res = np.array(res)
+        return res
 
     def score(self, X, y):
         """Calculate the score of the prediction.

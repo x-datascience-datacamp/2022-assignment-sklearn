@@ -11,13 +11,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 from sklearn.datasets import make_classification
 from sklearn.neighbors import KNeighborsClassifier
-from dateutil.relativedelta import relativedelta
 
 from sklearn_questions import KNearestNeighbors
 from sklearn_questions import MonthlySplit
-def most_common(lst):
-    '''Returns the most common element in a list'''
-    return max(set(lst), key=lst.count)
+
 
 @pytest.mark.parametrize("k", [1, 3, 5, 7])
 def test_one_nearest_neighbor_match_sklearn(k):
