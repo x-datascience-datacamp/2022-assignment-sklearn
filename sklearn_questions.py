@@ -59,7 +59,6 @@ from sklearn.utils.validation import check_X_y, check_is_fitted
 from sklearn.utils.validation import check_array
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.metrics.pairwise import pairwise_distances
-from dateutil.relativedelta import relativedelta
 
 
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
@@ -70,6 +69,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
 
     def fit(self, X, y):
         """Fitting function.
+
          Parameters
         ----------
         X : ndarray, shape (n_samples, n_features)
@@ -90,6 +90,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
 
     def predict(self, X):
         """Predict function.
+
         Parameters
         ----------
         X : ndarray, shape (n_test_samples, n_features)
@@ -114,6 +115,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
 
     def score(self, X, y):
         """Calculate the score of the prediction.
+        
         Parameters
         ----------
         X : ndarray, shape (n_samples, n_features)
@@ -176,6 +178,7 @@ class MonthlySplit(BaseCrossValidator):
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
+        
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
