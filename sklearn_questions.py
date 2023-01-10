@@ -1,12 +1,10 @@
 """Assignment - making a sklearn estimator and cv splitter.
 
 The goal of this assignment is to implement by yourself:
-
 - a scikit-learn estimator for the KNearestNeighbors for classification
   tasks and check that it is working properly.
 - a scikit-learn CV splitter where the splits are based on a Pandas
   DateTimeIndex.
-
 Detailed instructions for question 1:
 The nearest neighbor classifier predicts for a point X_i the target y_k of
 the training sample X_k which is the closest to X_i. We measure proximity with
@@ -20,8 +18,6 @@ scikit-learn estimator needs to check that the input given to `fit` and
 You can find more information on how they should be used in the following doc:
 https://scikit-learn.org/stable/developers/develop.html#rolling-your-own-estimator.
 Make sure to use them to pass `test_nearest_neighbor_check_estimator`.
-
-
 Detailed instructions for question 2:
 The data to split should contain the index or one column in
 datatime format. Then the aim is to split the data between train and test
@@ -30,25 +26,19 @@ predict of the following. For example if you have data distributed from
 november 2020 to march 2021, you have have 4 splits. The first split
 will allow to learn on november data and predict on december data, the
 second split to learn december and predict on january etc.
-
 We also ask you to respect the pep8 convention: https://pep8.org. This will be
 enforced with `flake8`. You can check that there is no flake8 errors by
 calling `flake8` at the root of the repo.
-
 Finally, you need to write docstrings for the methods you code and for the
 class. The docstring will be checked using `pydocstyle` that you can also
 call at the root of the repo.
-
 Hints
 -----
 - You can use the function:
-
 from sklearn.metrics.pairwise import pairwise_distances
-
 to compute distances between 2 sets of samples.
 """
 import numpy as np
-import pandas as pd
 
 from sklearn.base import BaseEstimator
 from sklearn.base import ClassifierMixin
@@ -57,7 +47,9 @@ from sklearn.model_selection import BaseCrossValidator
 
 from sklearn.utils.validation import check_X_y, check_is_fitted
 from sklearn.utils.validation import check_array
-from sklearn.utils.multiclass import check_classification_targets
+from sklearn.utils.multiclass import (
+    check_classification_targets, unique_labels
+)
 from sklearn.metrics.pairwise import pairwise_distances
 
 
@@ -76,12 +68,25 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
             Data to train the model.
         y : ndarray, shape (n_samples,)
             Labels associated with the training data.
-
         Returns
         ----------
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
+        # Check that X and y have correct shape
+        X, y = check_X_y(X, y)
+
+        # Input validation
+        check_classification_targets(y)
+
+        self.X_train_ = X
+        self.y_train_ = y
+
+        # Store the classes seen during fit
+        self.classes_ = unique_labels(y)
+
+        self.n_features_in_ = X.shape[1]
+
         return self
 
     def predict(self, X):
@@ -91,14 +96,33 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         ----------
         X : ndarray, shape (n_test_samples, n_features)
             Data to predict on.
-
         Returns
         ----------
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
-        y_pred = np.zeros(X.shape[0])
-        return y_pred
+        # Input validation
+        X = check_array(X)
+
+        # Check if fit has been called
+        check_is_fitted(self)
+
+        y_pred = []
+        for point in X:
+            distances = pairwise_distances(
+                np.concatenate([[point], self.X_train_])
+            )
+            distances = distances[0][1:]
+            neighbors_index = np.argpartition(distances, self.n_neighbors)[
+                : self.n_neighbors
+            ]
+            y_neighbors = self.y_train_[neighbors_index]
+
+            # Classification
+            values, counts = np.unique(y_neighbors, return_counts=True)
+            y_pred.append(values[np.argmax(counts)])
+
+        return np.array(y_pred)
 
     def score(self, X, y):
         """Calculate the score of the prediction.
@@ -109,13 +133,14 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
             Data to score on.
         y : ndarray, shape (n_samples,)
             target values.
-
         Returns
         ----------
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        return 0.
+        y_pred = self.predict(X)
+        accuracy = np.sum(y == y_pred) / len(y)
+        return accuracy
 
 
 class MonthlySplit(BaseCrossValidator):
@@ -124,7 +149,6 @@ class MonthlySplit(BaseCrossValidator):
     Split data based on the given `time_col` (or default to index). Each split
     corresponds to one month of data for the training and the next month of
     data for the test.
-
     Parameters
     ----------
     time_col : str, defaults to 'index'
@@ -134,7 +158,7 @@ class MonthlySplit(BaseCrossValidator):
         To use the index as column just set `time_col` to `'index'`.
     """
 
-    def __init__(self, time_col='index'):  # noqa: D107
+    def __init__(self, time_col="index"):  # noqa: D107
         self.time_col = time_col
 
     def get_n_splits(self, X, y=None, groups=None):
@@ -149,13 +173,22 @@ class MonthlySplit(BaseCrossValidator):
             Always ignored, exists for compatibility.
         groups : array-like of shape (n_samples,)
             Always ignored, exists for compatibility.
-
         Returns
         -------
         n_splits : int
             The number of splits.
         """
-        return 0
+        X = X.reset_index()
+        date_serie = X[self.time_col]
+
+        try:
+            year_month_serie = date_serie.map(lambda x: (x.year, x.month))
+        except AttributeError:
+            raise ValueError("timecol is not datetime")
+
+        n_months = len(year_month_serie.unique())
+
+        return n_months - 1
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -169,7 +202,6 @@ class MonthlySplit(BaseCrossValidator):
             Always ignored, exists for compatibility.
         groups : array-like of shape (n_samples,)
             Always ignored, exists for compatibility.
-
         Yields
         ------
         idx_train : ndarray
@@ -177,12 +209,22 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-
-        n_samples = X.shape[0]
         n_splits = self.get_n_splits(X, y, groups)
+
+        X = X.reset_index()
+        date_serie = X[self.time_col]
+
+        year_month_serie = date_serie.map(lambda x: (x.year, x.month))
+
+        months = np.sort(year_month_serie.unique())
+
         for i in range(n_splits):
-            idx_train = range(n_samples)
-            idx_test = range(n_samples)
-            yield (
-                idx_train, idx_test
-            )
+            year, month = months[i]
+            idx_train = X[
+                (date_serie.dt.year == year) & (date_serie.dt.month == month)
+            ].index.to_numpy()
+            year, month = months[i + 1]
+            idx_test = X[
+                (date_serie.dt.year == year) & (date_serie.dt.month == month)
+            ].index.to_numpy()
+            yield (idx_train, idx_test)
