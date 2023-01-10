@@ -184,10 +184,12 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        X.reset_index(inplace=True, drop=True)
-        if not isinstance(X[self.time_col].iloc[0], pd.Timestamp):
-            raise ValueError('X[time_col] does not contains datetime ')
-        n_splits = len(X.resample("M", on=self.time_col).count()) - 1
+        X = X.reset_index()
+
+        if not isinstance(X[self.time_col][0], pd.Timestamp):
+            raise ValueError('X[time_col] does not contains datetime')
+
+        n_splits = X[self.time_col].dt.to_period('M').nunique()-1
         return n_splits
 
     def split(self, X, y, groups=None):
@@ -211,7 +213,7 @@ class MonthlySplit(BaseCrossValidator):
             The testing set indices for that split.
         """
         n_splits = self.get_n_splits(X, y, groups)
-        X.reset_index(inplace=True, drop=True)
+        X = X.reset_index()
         date_col = X[self.time_col]
         period = X.resample("M", on=self.time_col).count().sort_index().index
         period_m_y = period.map(lambda x: (x.month, x.year))
