@@ -81,7 +81,6 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
-
         # Calculate Euclidian distance
         self._reference_X, self._reference_y = check_X_y(
             X, y, dtype="numeric")
