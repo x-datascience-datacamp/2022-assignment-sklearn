@@ -11,7 +11,7 @@ Detailed instructions for question 1:
 The nearest neighbor classifier predicts for a point X_i the target y_k of
 the training sample X_k which is the closest to X_i. We measure proximity with
 the Euclidean distance. The model will be evaluated with the accuracy (average
-number of samples corectly classified). You need to implement the `fit`,
+number of samples correctly classified). You need to implement the `fit`,
 `predict` and `score` methods for this class. The code you write should pass
 the test we implemented. You can run the tests by calling at the root of the
 repo `pytest test_sklearn_questions.py`. Note that to be fully valid, a
@@ -58,8 +58,10 @@ from sklearn.model_selection import BaseCrossValidator
 from sklearn.utils.validation import check_X_y, check_is_fitted
 from sklearn.utils.validation import check_array
 from sklearn.utils.multiclass import check_classification_targets
+from sklearn.utils.multiclass import unique_labels
 from sklearn.metrics.pairwise import pairwise_distances
 
+import scipy.stats as stats
 
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
     """KNearestNeighbors classifier."""
@@ -82,6 +84,12 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
+        X, y = check_X_y(X, y)
+
+        self.classes_ = unique_labels(y)
+        self.n_features_in_ = X.shape[1]
+        self.X_ = X
+        self.y_ = y
         return self
 
     def predict(self, X):
@@ -97,7 +105,29 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
-        y_pred = np.zeros(X.shape[0])
+        check_is_fitted(self)
+        X = check_array(X)
+
+        y_pred = np.zeros(X.shape[0], dtype=self.y_.dtype)
+
+        for i in range(X.shape[0]):
+            # Fetching the sample
+            x_i = X[i]
+
+            # Computing euclidian distance of sample to other registered data points
+            euclidian_dist = np.array([np.linalg.norm(x_i - x_j) for x_j in self.X_])
+            # Computing the indexes that would sort the array
+            sorted_index = np.argsort(euclidian_dist)
+            # The K first indexes are kept as the K-closest neighbours
+            k_neighbours_index = sorted_index[0:self.n_neighbors]
+            # Fetching the labels of K-closest neighbours
+            neighbours_labels = self.y_[k_neighbours_index]
+
+            # The sample label is the dominating one within the K-closest neighbours
+            y_i = stats.mode(neighbours_labels)[0][0]
+            # Saving the prediction of the sample
+            y_pred[i] = y_i
+
         return y_pred
 
     def score(self, X, y):
@@ -115,7 +145,23 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        return 0.
+        # Predicting samples labels
+        y_pred = self.predict(X)
+        # Computing the score
+        score = np.sum(y_pred == y) / y.shape[0]
+
+        return score
+
+
+from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
+
+X, y = make_classification(n_samples=200, n_features=20, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
+
+knn = KNearestNeighbors(5)
+knn.fit(X_train, y_train)
+print("Accuracy:", knn.score(X_test, y_test))
 
 
 class MonthlySplit(BaseCrossValidator):
