@@ -62,6 +62,57 @@ from sklearn.metrics.pairwise import pairwise_distances
 from dateutil.relativedelta import relativedelta
 
 
+"""Assignment - making a sklearn estimator and cv splitter.
+The goal of this assignment is to implement by yourself:
+- a scikit-learn estimator for the KNearestNeighbors for classification
+  tasks and check that it is working properly.
+- a scikit-learn CV splitter where the splits are based on a Pandas
+  DateTimeIndex.
+Detailed instructions for question 1:
+The nearest neighbor classifier predicts for a point X_i the target y_k of
+the training sample X_k which is the closest to X_i. We measure proximity with
+the Euclidean distance. The model will be evaluated with the accuracy (average
+number of samples corectly classified). You need to implement the `fit`,
+`predict` and `score` methods for this class. The code you write should pass
+the test we implemented. You can run the tests by calling at the root of the
+repo `pytest test_sklearn_questions.py`. Note that to be fully valid, a
+scikit-learn estimator needs to check that the input given to `fit` and
+`predict` are correct using the `check_*` functions imported in the file.
+Make sure to use them to pass `test_nearest_neighbor_check_estimator`.
+Detailed instructions for question 2:
+The data to split should contain the index or one column in
+datatime format. Then the aim is to split the data between train and test
+sets when for each pair of successive months, we learn on the first and
+predict of the following. For example if you have data distributed from
+november 2020 to march 2021, you have have 5 splits. The first split
+will allow to learn on november data and predict on december data, the
+second split to learn december and predict on january etc.
+We also ask you to respect the pep8 convention: https://pep8.org. This will be
+enforced with `flake8`. You can check that there is no flake8 errors by
+calling `flake8` at the root of the repo.
+Finally, you need to write docstrings for the methods you code and for the
+class. The docstring will be checked using `pydocstyle` that you can also
+call at the root of the repo.
+Hints
+-----
+- You can use the function:
+from sklearn.metrics.pairwise import pairwise_distances
+to compute distances between 2 sets of samples.
+"""
+import numpy as np
+
+from sklearn.base import BaseEstimator
+from sklearn.base import ClassifierMixin
+
+from sklearn.model_selection import BaseCrossValidator
+
+from sklearn.utils.validation import check_X_y, check_is_fitted
+from sklearn.utils.validation import check_array
+from sklearn.utils.multiclass import unique_labels
+from sklearn.metrics.pairwise import pairwise_distances
+from dateutil.relativedelta import relativedelta
+
+
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
     """KNearestNeighbors classifier."""
 
@@ -81,12 +132,9 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
-        X, y = check_X_y(X, y)
-        check_classification_targets(y)
-        self.X_train_ = X
-        self.y_train_ = y
-        self.classes_ = np.unique(y)
-        # test
+        self.classes_ = unique_labels(y)
+        self.X_converted_, self.y_converted_ \
+            = check_X_y(X, y)  # Checks X and y for consistent length
         return self
 
     def predict(self, X):
@@ -100,18 +148,26 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Class labels for each test data sample.
         """
-        check_is_fitted(self, ['X_train_', 'y_train_', 'classes_'])
+        check_is_fitted(self)
+        # Checks if the estimator is fitted
+        # by verifying the presence of fitted attributes
         X = check_array(X)
 
-        res = []
-        n_X = len(X)
-        for i in range(n_X):
-            distances = pairwise_distances(self.X_train_, [X[i]]).flatten()
-            indexes = np.argsort(distances)[:self.n_neighbors]
-            labels = self.y_train_[indexes]
-            res.append(max(list(labels), key=list(labels).count))
-        res = np.array(res)
-        return res
+        pred = []  # prediction list that will be filled little by little
+        pair_distances = pairwise_distances(X, self.X_converted_)
+        for i in range(pair_distances.shape[0]):
+            min = pair_distances.max() + 1
+            # The goal is to find the argmin,
+            # we iterate and retain the minimum value we found
+            argmin = 0
+            for j in range(pair_distances.shape[1]):
+                if pair_distances[i][j] < min:
+                    min = pair_distances[i][j]
+                    argmin = j
+            pred.append(self.y_converted_[argmin])
+            # We fill the prediction with class of the nearest data point
+
+        return np.array(pred)
 
     def score(self, X, y):
         """Calculate the score of the prediction.
@@ -126,8 +182,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        y_pred = self.predict(X)
-        return np.mean(y_pred == y)
+        return np.mean(self.predict(X) == y)
 
 
 class MonthlySplit(BaseCrossValidator):
