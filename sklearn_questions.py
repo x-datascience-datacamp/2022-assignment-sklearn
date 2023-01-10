@@ -181,6 +181,11 @@ class MonthlySplit(BaseCrossValidator):
         """
         if type(X.index) != pd.RangeIndex:
             X = X.reset_index()
+
+        # check datatype
+        if X[self.time_col].dtype != "datetime64[ns]":
+            raise ValueError("datetime")
+
         return len(X.resample("M", on=self.time_col)) - 1
 
     def split(self, X, y, groups=None):
@@ -203,26 +208,10 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-        if type(X) == pd.Series:
-            X = X.to_frame()
-
+        X = X.to_frame() if type(X) == pd.Series else X
         X = X.reset_index()
-
-        # check datatype
-        if X[self.time_col].dtype != "datetime64[ns]":
-            raise ValueError("datetime")
-
-        # get number of splits
         n_splits = self.get_n_splits(X, y, groups)
-
-        def agg_indexes(arraylike):
-            """Aggregate indexes of a pd.DataFrame."""
-            return arraylike.index
-
-        # resample and aggregate indexes
         X_resampled = X.resample("M", on=self.time_col)
-        idxs_by_month = X_resampled.apply(agg_indexes)
+        ids_by_mth = X_resampled.apply(lambda al: al.index)
         for i in range(n_splits):
-            idx_train = idxs_by_month.iloc[i]
-            idx_test = idxs_by_month.iloc[i + 1]
-            yield (idx_train.values, idx_test.values)
+            yield ids_by_mth.iloc[i].values, ids_by_mth.iloc[i + 1].values
