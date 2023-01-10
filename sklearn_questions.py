@@ -89,6 +89,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self.X_, self.y_ = check_X_y(X, y)
         check_classification_targets(self.y_)
         # Store the classes seen during fit
+        self.n_features_in_ = self.X_.shape[1]
         self.classes_ = unique_labels(y)
 
         return self
@@ -106,7 +107,6 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
-
         # Check if fit has been called
         check_is_fitted(self)
 
@@ -209,7 +209,6 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-
         n_splits = self.get_n_splits(X, y, groups)
         X = X.reset_index()
         temps = X[self.time_col]
