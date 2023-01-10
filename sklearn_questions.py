@@ -73,15 +73,19 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
          Parameters
         ----------
         X : ndarray, shape (n_samples, n_features)
-            Data to train the model.
+            training data.
         y : ndarray, shape (n_samples,)
-            Labels associated with the training data.
-
+            target values.
         Returns
         ----------
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
+        # test
+        self.X_, self.y_ = check_X_y(X, y)
+        check_classification_targets(self.y_)
+        self.classes_ = np.unique(self.y_)
+        self.n_features_in_ = self.X_.shape[1]
         return self
 
     def predict(self, X):
@@ -90,15 +94,24 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         X : ndarray, shape (n_test_samples, n_features)
-            Data to predict on.
-
+            Test data to predict on.
         Returns
         ----------
         y : ndarray, shape (n_test_samples,)
-            Predicted class labels for each test data sample.
+            Class labels for each test data sample.
         """
-        y_pred = np.zeros(X.shape[0])
-        return y_pred
+        check_is_fitted(self)
+        X = check_array(X)
+
+        res = []
+        n_X = len(X)
+        for i in range(n_X):
+            distances = pairwise_distances(self.X_, [X[i]]).flatten()
+            indexes = np.argsort(distances)[:self.n_neighbors]
+            labels = self.y_[indexes]
+            res.append(max(list(labels), key=list(labels).count))
+        res = np.array(res)
+        return res
 
     def score(self, X, y):
         """Calculate the score of the prediction.
@@ -106,16 +119,16 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         X : ndarray, shape (n_samples, n_features)
-            Data to score on.
+            training data.
         y : ndarray, shape (n_samples,)
             target values.
-
         Returns
         ----------
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        return 0.
+        y_pred = self.predict(X)
+        return np.mean(y_pred == y)
 
 
 class MonthlySplit(BaseCrossValidator):
@@ -155,7 +168,13 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        return 0
+        if self.time_col != 'index':
+            X = X.set_index(self.time_col)
+
+        if not pd.api.types.is_datetime64_any_dtype(X.index):
+            raise ValueError('The input column is not a datetime !')
+
+        return X.resample('M').count().shape[0] - 1
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -169,7 +188,6 @@ class MonthlySplit(BaseCrossValidator):
             Always ignored, exists for compatibility.
         groups : array-like of shape (n_samples,)
             Always ignored, exists for compatibility.
-
         Yields
         ------
         idx_train : ndarray
@@ -177,12 +195,32 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
+        if self.time_col != 'index':
+            X = X.set_index(self.time_col)
 
-        n_samples = X.shape[0]
-        n_splits = self.get_n_splits(X, y, groups)
-        for i in range(n_splits):
-            idx_train = range(n_samples)
-            idx_test = range(n_samples)
+        if not pd.api.types.is_datetime64_any_dtype(X.index):
+            raise ValueError('The input column is not a datetime !')
+        splits = []
+        zip_date = zip(X.index.month, X.index.year)
+        possibilities = {(month, year) for (month, year) in zip_date}
+        possibilities = set(possibilities)
+        for possibility in possibilities:
+            (month, year) = possibility
+            if month == 12:
+                if (1, year + 1) in possibilities:
+                    splits.append([(month, year), (1, year+1)])
+            else:
+                if (month + 1, year) in possibilities:
+                    splits.append([(month, year), (month+1, year)])
+        splits = np.array([[a, b, c, d] for [(a, b), (c, d)] in splits])
+        splits = splits[np.lexsort((splits[:, 1], splits[:, 0]))]
+        for split in splits:
+            month1, year1 = split[0], split[1]
+            month2, year2 = split[2], split[3]
+            mask1 = (X.index.month == month1) & (X.index.year == year1)
+            mask2 = (X.index.month == month2) & (X.index.year == year2)
+            idx_test = np.argwhere(mask1).flatten()
+            idx_train = np.argwhere(mask2).flatten()
             yield (
-                idx_train, idx_test
-            )
+                idx_test, idx_train
+                  )
