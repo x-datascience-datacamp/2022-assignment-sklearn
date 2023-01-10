@@ -59,6 +59,7 @@ from sklearn.utils.validation import check_X_y, check_is_fitted
 from sklearn.utils.validation import check_array
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.metrics.pairwise import pairwise_distances
+from dateutil.relativedelta import relativedelta
 
 
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
@@ -102,13 +103,17 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         check_is_fitted(self, ['X_train_', 'y_train_', 'classes_'])
         X = check_array(X)
 
+        def most_common(lst):
+            '''Returns the most common element in a list'''
+            return max(set(lst), key=lst.count)
+
         neighbors = []
         for x in X:
             distances = pairwise_distances(self.X_train_, [x])
             y_sorted = [y for _, y in sorted(zip(distances, self.y_train_))]
             neighbors.append(y_sorted[:self.n_neighbors])
-        
-        return np.array(list(map(most_common,neighbors)))
+
+        return np.array(list(map(most_common, neighbors)))
 
     def score(self, X, y):
         """Calculate the score of the prediction.
@@ -193,14 +198,13 @@ class MonthlySplit(BaseCrossValidator):
             The testing set indices for that split.
         """
 
-        n_samples = X.shape[0]
         n_splits = self.get_n_splits(X, y, groups)
         X = X.reset_index()
         X.set_index('index', inplace=True)
         X.index.name = "Time"
 
         actual_date = X.index.min()
-        for i in range(2):
+        for i in range(n_splits):
             date_train = actual_date
             date_test = actual_date + relativedelta(months=1)
             idx_train = X.query(
