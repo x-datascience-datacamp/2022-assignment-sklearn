@@ -60,7 +60,6 @@ from sklearn.utils.validation import check_array
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.metrics.pairwise import pairwise_distances
 from dateutil.relativedelta import relativedelta
-from sklearn.utils.multiclass import unique_labels
 
 
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
@@ -133,11 +132,9 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
 
 class MonthlySplit(BaseCrossValidator):
     """CrossValidator based on monthly split.
-
     Split data based on the given `time_col` (or default to index). Each split
     corresponds to one month of data for the training and the next month of
     data for the test.
-
     Parameters
     ----------
     time_col : str, defaults to 'index'
@@ -152,7 +149,6 @@ class MonthlySplit(BaseCrossValidator):
 
     def get_n_splits(self, X, y=None, groups=None):
         """Return the number of splitting iterations in the cross-validator.
-
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
@@ -162,7 +158,6 @@ class MonthlySplit(BaseCrossValidator):
             Always ignored, exists for compatibility.
         groups : array-like of shape (n_samples,)
             Always ignored, exists for compatibility.
-
         Returns
         -------
         n_splits : int
@@ -174,11 +169,22 @@ class MonthlySplit(BaseCrossValidator):
         if not pd.api.types.is_datetime64_any_dtype(X.index):
             raise ValueError('The input column is not a datetime !')
 
-        return X.resample('M').count().shape[0] - 1
+        n_splits = 0
+        zip_date = zip(X.index.month, X.index.year)
+        possibilities = {(month, year) for (month, year) in zip_date}
+        possibilities = set(possibilities)
+        for possibility in possibilities:
+            (month, year) = possibility
+            if month == 12:
+                if (1, year + 1) in possibilities:
+                    n_splits += 1
+            else:
+                if (month + 1, year) in possibilities:
+                    n_splits += 1
+        return n_splits
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
-
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
@@ -188,7 +194,6 @@ class MonthlySplit(BaseCrossValidator):
             Always ignored, exists for compatibility.
         groups : array-like of shape (n_samples,)
             Always ignored, exists for compatibility.
-
         Yields
         ------
         idx_train : ndarray
@@ -196,30 +201,32 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
+        if self.time_col != 'index':
+            X = X.set_index(self.time_col)
 
-        n_splits = self.get_n_splits(X, y, groups)
-        X = X.reset_index()
-        X.set_index('index', inplace=True)
-        X.index.name = "Time"
-
-        actual_date = X.index.min()
-        for i in range(n_splits):
-            date_train = actual_date
-            date_test = actual_date + relativedelta(months=1)
-            idx_train = X.query(
-                'Time.dt.month == {} and Time.dt.year == {}'
-                .format(date_train.month, date_train.year)
-            ).index
-            print(idx_train)
-            idx_test = X.query(
-                'Time.dt.month == {} and Time.dt.year == {}'
-                .format(date_test.month, date_test.year)
-            ).index
-            print(idx_test)
-            actual_date += relativedelta(months=1)
-            print(actual_date)
-            idx_train = [X.index.get_loc(date) for date in idx_train]
-            idx_test = [X.index.get_loc(date) for date in idx_test]
+        if not pd.api.types.is_datetime64_any_dtype(X.index):
+            raise ValueError('The input column is not a datetime !')
+        splits = []
+        zip_date = zip(X.index.month, X.index.year)
+        possibilities = {(month, year) for (month, year) in zip_date}
+        possibilities = set(possibilities)
+        for possibility in possibilities:
+            (month, year) = possibility
+            if month == 12:
+                if (1, year + 1) in possibilities:
+                    splits.append([(month, year), (1, year+1)])
+            else:
+                if (month + 1, year) in possibilities:
+                    splits.append([(month, year), (month+1, year)])
+        splits = np.array([[a, b, c, d] for [(a, b), (c, d)] in splits])
+        splits = splits[np.lexsort((splits[:, 1], splits[:, 0]))]
+        for split in splits:
+            month1, year1 = split[0], split[1]
+            month2, year2 = split[2], split[3]
+            mask1 = (X.index.month == month1) & (X.index.year == year1)
+            mask2 = (X.index.month == month2) & (X.index.year == year2)
+            idx_test = np.argwhere(mask1).flatten()
+            idx_train = np.argwhere(mask2).flatten()
             yield (
-                idx_train, idx_test
-            )
+                idx_test, idx_train
+                  )
