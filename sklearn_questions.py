@@ -105,9 +105,9 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         res = []
         n_X = len(X)
         for i in range(n_X):
-            distances = pairwise_distances(self.X_train_, [X[i]]).flatten()
+            distances = pairwise_distances(self.X_, [X[i]]).flatten()
             indexes = np.argsort(distances)[:self.n_neighbors]
-            labels = self.y_train_[indexes]
+            labels = self.y_[indexes]
             res.append(max(list(labels), key=list(labels).count))
         res = np.array(res)
         return res
