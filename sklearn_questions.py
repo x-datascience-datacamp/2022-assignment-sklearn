@@ -69,53 +69,62 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
 
     def fit(self, X, y):
         """Fitting function.
-
          Parameters
         ----------
         X : ndarray, shape (n_samples, n_features)
-            Data to train the model.
+            training data.
         y : ndarray, shape (n_samples,)
-            Labels associated with the training data.
-
+            target values.
         Returns
         ----------
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
+        X, y = check_X_y(X, y)
+        check_classification_targets(y)
+        self.X_train_ = X
+        self.y_train_ = y
+        self.classes_ = np.unique(y)
+        # test
         return self
 
     def predict(self, X):
         """Predict function.
-
         Parameters
         ----------
         X : ndarray, shape (n_test_samples, n_features)
-            Data to predict on.
-
+            Test data to predict on.
         Returns
         ----------
         y : ndarray, shape (n_test_samples,)
-            Predicted class labels for each test data sample.
+            Class labels for each test data sample.
         """
-        y_pred = np.zeros(X.shape[0])
-        return y_pred
+        check_is_fitted(self, ['X_train_', 'y_train_', 'classes_'])
+        X = check_array(X)
+
+        neighbors = []
+        for x in X:
+            distances = pairwise_distances(self.X_train_, [x])
+            y_sorted = [y for _, y in sorted(zip(distances, self.y_train_))]
+            neighbors.append(y_sorted[:self.n_neighbors])
+        
+        return np.array(list(map(most_common,neighbors)))
 
     def score(self, X, y):
         """Calculate the score of the prediction.
-
         Parameters
         ----------
         X : ndarray, shape (n_samples, n_features)
-            Data to score on.
+            training data.
         y : ndarray, shape (n_samples,)
             target values.
-
         Returns
         ----------
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        return 0.
+        y_pred = self.predict(X)
+        return np.mean(y_pred == y)
 
 
 class MonthlySplit(BaseCrossValidator):
@@ -155,7 +164,13 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        return 0
+        if self.time_col != 'index':
+            X = X.set_index(self.time_col)
+
+        if not pd.api.types.is_datetime64_any_dtype(X.index):
+            raise ValueError('The input column is not a datetime !')
+
+        return X.resample('M').count().shape[0] - 1
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -180,9 +195,28 @@ class MonthlySplit(BaseCrossValidator):
 
         n_samples = X.shape[0]
         n_splits = self.get_n_splits(X, y, groups)
-        for i in range(n_splits):
-            idx_train = range(n_samples)
-            idx_test = range(n_samples)
+        X = X.reset_index()
+        X.set_index('index', inplace=True)
+        X.index.name = "Time"
+
+        actual_date = X.index.min()
+        for i in range(2):
+            date_train = actual_date
+            date_test = actual_date + relativedelta(months=1)
+            idx_train = X.query(
+                'Time.dt.month == {} and Time.dt.year == {}'
+                .format(date_train.month, date_train.year)
+            ).index
+            print(idx_train)
+            idx_test = X.query(
+                'Time.dt.month == {} and Time.dt.year == {}'
+                .format(date_test.month, date_test.year)
+            ).index
+            print(idx_test)
+            actual_date += relativedelta(months=1)
+            print(actual_date)
+            idx_train = [X.index.get_loc(date) for date in idx_train]
+            idx_test = [X.index.get_loc(date) for date in idx_test]
             yield (
                 idx_train, idx_test
             )
