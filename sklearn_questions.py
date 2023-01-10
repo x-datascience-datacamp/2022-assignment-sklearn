@@ -82,6 +82,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
+        self.points = np.array((X, y))
         return self
 
     def predict(self, X):
