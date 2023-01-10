@@ -48,7 +48,6 @@ from sklearn.metrics.pairwise import pairwise_distances
 to compute distances between 2 sets of samples.
 """
 import numpy as np
-import pandas as pd
 
 from sklearn.base import BaseEstimator
 from sklearn.base import ClassifierMixin
@@ -57,8 +56,8 @@ from sklearn.model_selection import BaseCrossValidator
 
 from sklearn.utils.validation import check_X_y, check_is_fitted
 from sklearn.utils.validation import check_array
-from sklearn.utils.multiclass import check_classification_targets
 from sklearn.metrics.pairwise import pairwise_distances
+from sklearn.utils.multiclass import unique_labels
 
 
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
@@ -82,6 +81,16 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
+
+        # Calculate Euclidian distance
+        self._reference_X, self._reference_y = check_X_y(
+            X, y, dtype="numeric")
+
+        # Store the classes seen during fit
+        self.classes_ = unique_labels(self._reference_y)
+
+        self.n_features_in_ = self._reference_X.shape[1]
+
         return self
 
     def predict(self, X):
@@ -97,8 +106,25 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
-        y_pred = np.zeros(X.shape[0])
-        return y_pred
+        # Check if fit has been called
+        check_is_fitted(self)
+
+        # Input validation
+        X = check_array(X)
+
+        indices_eucl = pairwise_distances(X, self._reference_X)
+
+        indices_eucl = np.argsort(indices_eucl)[:, 0:self.n_neighbors]
+
+        y_pred = self._reference_y[indices_eucl]
+
+        y_pred_single_list = []
+        for y_pred_single in y_pred:
+            u, indices = np.unique(y_pred_single, return_inverse=True)
+
+            y_pred_single_list.append(u[np.argmax(np.bincount(indices))])
+
+        return np.array(y_pred_single_list)
 
     def score(self, X, y):
         """Calculate the score of the prediction.
@@ -115,7 +141,10 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        return 0.
+        y_pred = self.predict(X)
+        mask = (np.array(y_pred) == np.array(y))
+
+        return np.count_nonzero(mask)/len(mask)
 
 
 class MonthlySplit(BaseCrossValidator):
@@ -155,7 +184,13 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        return 0
+        X = X.reset_index()
+
+        if not np.issubdtype(X[self.time_col].dtype, np.datetime64):
+            raise ValueError('datetime')
+
+        months_series = X[self.time_col].dt.to_period('M')
+        return len(np.unique(months_series)) - 1
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -177,12 +212,20 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
+        X = X.reset_index()
 
-        n_samples = X.shape[0]
         n_splits = self.get_n_splits(X, y, groups)
+
+        months_series = X[self.time_col].dt.to_period('M')
+        months_series_unique = np.sort(np.unique(months_series))
+
         for i in range(n_splits):
-            idx_train = range(n_samples)
-            idx_test = range(n_samples)
+            idx_train = X.loc[
+                months_series_unique[i] == months_series].index.to_numpy()
+
+            idx_test = X.loc[
+                months_series_unique[i+1] == months_series].index.to_numpy()
+
             yield (
                 idx_train, idx_test
             )
