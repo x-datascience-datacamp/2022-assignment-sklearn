@@ -48,7 +48,6 @@ from sklearn.metrics.pairwise import pairwise_distances
 to compute distances between 2 sets of samples.
 """
 import numpy as np
-import pandas as pd
 
 from sklearn.base import BaseEstimator
 from sklearn.base import ClassifierMixin
@@ -65,7 +64,8 @@ from scipy import stats
 
 
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
-    """KNearestNeighbors classifier."""
+    """KNearestNeighbors classifier.
+    """
 
     def __init__(self, n_neighbors=1):  # noqa: D107
         self.n_neighbors = n_neighbors
@@ -78,7 +78,8 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
             Data to train the model.
         y : ndarray, shape (n_samples,)
             Labels associated with the training data.
-        # Check that X and y have correct shape"""
+        # Check that X and y have correct shape
+        """
         X, y = check_X_y(X, y)
         check_classification_targets(y)
         self.X_ = X
@@ -98,7 +99,8 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         X : ndarray, shape (n_test_samples, n_features)
-            Data to predict on."""
+            Data to predict on.
+        """
         # Check if fit has been called
         check_is_fitted(self)
         # Input validation
@@ -124,7 +126,8 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         X : ndarray, shape (n_samples, n_features)
             Data to score on.
         y : ndarray, shape (n_samples,)
-            target values."""
+            target values.
+        """
         """Returns
         ----------
         score : float
