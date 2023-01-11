@@ -55,7 +55,7 @@ from sklearn.base import ClassifierMixin
 from collections import Counter
 
 from sklearn.model_selection import BaseCrossValidator
-from pandas.core.dtypes.common import is_datetime64_any_dtype
+
 from sklearn.utils.validation import check_X_y, check_is_fitted
 from sklearn.utils.validation import check_array
 from sklearn.utils.multiclass import check_classification_targets
@@ -177,10 +177,12 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        X = X.reset_index()
-        if not is_datetime64_any_dtype(X[self.time_col]):
-            raise ValueError('incorrect dtype')
-        return len(X.resample('M', on=self.time_col)) - 1
+        X = X.reset_index()[self.time_col]
+        if not X.dtype == np.dtype('datetime64[ns]'):
+            raise ValueError('Column has incorrect dtype')
+        n_splits = len(np.unique(X.dt.to_period(freq='M'))) - 1
+
+        return n_splits
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
