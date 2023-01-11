@@ -52,6 +52,7 @@ import numpy as np
 
 from sklearn.base import BaseEstimator
 from sklearn.base import ClassifierMixin
+from collections import Counter
 
 from sklearn.model_selection import BaseCrossValidator
 
@@ -85,11 +86,10 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         check_classification_targets(y)
         X, y = check_X_y(X, y)
 
-        self.X_ = X
-        self.y_ = y
-
         self.classes_ = np.unique(y)
         self.n_features_in_ = X.shape[1]
+        self.X_ = X
+        self.y_ = y
 
         return self
 
@@ -110,14 +110,13 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         X = check_array(X)
 
         dist = pairwise_distances(X, self.X_)
-        neigh_indices = dist.argsort(axis=1)[:, :self.n_neighbors]
-        y_pred = []
-        for i in range(len(neigh_indices)):
-            y_pred.append(max(set(self.y_[neigh_indices[i]]),
-                              key=list(self.y_[neigh_indices[i]]).count))
+        i_neigh = dist.argsort(axis=1)[:, :self.n_neighbors]
+        pred = []
+        for i in range(len(i_neigh)):
+            pred.append(Counter(self.y_[i_neigh[i]]).most_common(1)[0][0])
 
         check_classification_targets(y_pred)
-        return y_pred
+        return np.array(y_pred)
 
     def score(self, X, y):
         """Calculate the score of the prediction.
@@ -134,6 +133,9 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
+        X = check_array(X)
+        X, y = check_X_y(X, y)
+        check_classification_targets(y)
         y_pred = self.predict(X)
         return (y == y_pred).mean()
 
