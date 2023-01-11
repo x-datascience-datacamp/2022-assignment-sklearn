@@ -208,10 +208,11 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-        X = X.to_frame() if type(X) == pd.Series else X
+        if type(X) == pd.Series:
+            X = X.to_frame()
         X = X.reset_index()
         n_splits = self.get_n_splits(X, y, groups)
-        X_resampled = X.resample("M", on=self.time_col)
-        ids_by_mth = X_resampled.apply(lambda al: al.index)
+        ids_by_mth = [groups.index.values
+                      for _, groups in X.resample("M", on=self.time_col)]
         for i in range(n_splits):
-            yield ids_by_mth.iloc[i].values, ids_by_mth.iloc[i + 1].values
+            yield ids_by_mth[i], ids_by_mth[i + 1]
