@@ -179,7 +179,7 @@ class MonthlySplit(BaseCrossValidator):
         """
         X = X.reset_index()
         if not is_datetime64_any_dtype(X[self.time_col]):
-            raise ValueError('incottect dtype')
+            raise ValueError('incorrect dtype')
         return len(X.resample('M', on=self.time_col)) - 1
 
     def split(self, X, y, groups=None):
@@ -204,10 +204,12 @@ class MonthlySplit(BaseCrossValidator):
         """
         X = X.reset_index()
         n_splits = self.get_n_splits(X, y, groups)
-        X = X.resample('M', on=self.time_col)
-        idx_month = X.apply(lambda x: x.index)
+        column = X[self.time_col].dt.to_period(freq="M")
+        dates = np.unique(column)
 
         for i in range(n_splits):
-            idx_train = idx_month.iloc[i]
-            idx_test = idx_month.iloc[i+1]
-            yield idx_train.values, idx_test.values
+            cur_date = dates[i]
+            next_date = dates[i+1]
+            idx_train = np.where(column == cur_date)[0]
+            idx_test = np.where(column == next_date)[0]
+            yield idx_train, idx_test
