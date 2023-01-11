@@ -11,7 +11,7 @@ Detailed instructions for question 1:
 The nearest neighbor classifier predicts for a point X_i the target y_k of
 the training sample X_k which is the closest to X_i. We measure proximity with
 the Euclidean distance. The model will be evaluated with the accuracy (average
-number of samples corectly classified). You need to implement the `fit`,
+number of samples correctly classified). You need to implement the `fit`,
 `predict` and `score` methods for this class. The code you write should pass
 the test we implemented. You can run the tests by calling at the root of the
 repo `pytest test_sklearn_questions.py`. Note that to be fully valid, a
@@ -30,7 +30,6 @@ predict of the following. For example if you have data distributed from
 november 2020 to march 2021, you have have 4 splits. The first split
 will allow to learn on november data and predict on december data, the
 second split to learn december and predict on january etc.
-
 We also ask you to respect the pep8 convention: https://pep8.org. This will be
 enforced with `flake8`. You can check that there is no flake8 errors by
 calling `flake8` at the root of the repo.
@@ -57,7 +56,8 @@ from sklearn.model_selection import BaseCrossValidator
 
 from sklearn.utils.validation import check_X_y, check_is_fitted
 from sklearn.utils.validation import check_array
-from sklearn.utils.multiclass import check_classification_targets
+from sklearn.utils.multiclass import check_classification_targets,\
+    unique_labels
 from sklearn.metrics.pairwise import pairwise_distances
 
 
@@ -82,6 +82,14 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
+        X, y = check_X_y(X, y)
+        check_classification_targets(y)
+
+        self.n_features_in_ = X.shape[1]
+        self.classes_ = unique_labels(y)
+
+        self.X_ = X
+        self.y_ = y
         return self
 
     def predict(self, X):
@@ -97,7 +105,18 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
+        X = check_array(X)
+        check_is_fitted(self)
+
         y_pred = np.zeros(X.shape[0])
+        distances = pairwise_distances(self.X_, X)
+
+        for i in range(y_pred.shape[0]):
+            k = self.n_neighbors
+            neighbors = np.argpartition(distances[:, i], k)
+            k_neighbors_labels = [self.y_[j] for j in neighbors[:k]]
+            y_pred[i] = max(set(k_neighbors_labels),
+                            key=k_neighbors_labels.count)
         return y_pred
 
     def score(self, X, y):
@@ -115,7 +134,12 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        return 0.
+        X, y = check_X_y(X, y)
+        check_classification_targets(y)
+
+        y_pred = self.predict(X)
+        score = (y == y_pred).sum()/y.shape[0]
+        return score
 
 
 class MonthlySplit(BaseCrossValidator):
@@ -155,7 +179,8 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        return 0
+        X = pd.DataFrame(X).reset_index()
+        return X[self.time_col].dt.to_period('M').nunique()-1
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -177,12 +202,17 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
+        X = pd.DataFrame(X).reset_index()
+        month_year = X[self.time_col].dt.to_period('M')
 
-        n_samples = X.shape[0]
         n_splits = self.get_n_splits(X, y, groups)
+        splits = month_year.unique()
+
         for i in range(n_splits):
-            idx_train = range(n_samples)
-            idx_test = range(n_samples)
+            train_split = month_year[month_year == splits[i]]
+            test_split = month_year[month_year == splits[i+1]]
+            idx_train = train_split.index
+            idx_test = test_split.index
             yield (
                 idx_train, idx_test
             )
