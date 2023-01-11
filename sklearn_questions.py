@@ -49,6 +49,8 @@ to compute distances between 2 sets of samples.
 """
 import numpy as np
 import pandas as pd
+from statistics import mode
+from datetime import timedelta
 
 from sklearn.base import BaseEstimator
 from sklearn.base import ClassifierMixin
@@ -82,6 +84,10 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
+        self.X_train_, self.y_train_ = check_X_y(X, y)
+        check_classification_targets(self.y_train_)
+        self.classes_ = np.unique(self.y_train_)
+        self.n_features_in_ = self.X_train_.shape[1]
         return self
 
     def predict(self, X):
@@ -97,7 +103,17 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
-        y_pred = np.zeros(X.shape[0])
+        check_is_fitted(self)
+        X = check_array(X)
+        y_pred = []
+        for i in range(X.shape[0]):
+            X_concatinated = np.concatenate([[X[i, :]], self.X_train_])
+            distances = pairwise_distances(X_concatinated)
+            indecies = np.argsort(distances, axis=1)[0, 1:self.n_neighbors+1]
+            labels = self.y_train_[indecies-1]
+            pred_label = mode(labels)
+            y_pred.append(pred_label)
+        y_pred = np.array(y_pred)
         return y_pred
 
     def score(self, X, y):
@@ -115,7 +131,9 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        return 0.
+        y_pred = self.predict(X)
+        score = np.sum(y_pred == y) / (len(y))
+        return score
 
 
 class MonthlySplit(BaseCrossValidator):
@@ -155,7 +173,19 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        return 0
+        X = X.reset_index()
+        X = X.set_index(self.time_col)
+        if (X.index.inferred_type != "datetime64"):
+            raise ValueError("datetime")
+        date_start = X.index.min()
+        date_end = X.index.max()
+        numbers_of_days = (date_end - date_start).days
+        number_of_splits = (numbers_of_days // 30) - 1
+        X = X.reset_index()
+        if not isinstance(X[self.time_col][0], pd.Timestamp):
+            raise ValueError("We don't have a datetime column")
+        date_start = X[self.time_col]
+        return number_of_splits
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -177,12 +207,28 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-
-        n_samples = X.shape[0]
         n_splits = self.get_n_splits(X, y, groups)
+        X = X.reset_index()
+        X = X.set_index(self.time_col)
+        begining_training_month = X.index.min()
         for i in range(n_splits):
-            idx_train = range(n_samples)
-            idx_test = range(n_samples)
+            ending_training_month = begining_training_month.replace(
+                day=begining_training_month.days_in_month)
+            training_days = pd.date_range(
+                begining_training_month,
+                ending_training_month - timedelta(days=1),
+                freq='d')
+            begining_training_month = ending_training_month + timedelta(days=1)
+            end_month_test = begining_training_month.replace(
+                day=begining_training_month.days_in_month)
+            testing_days = pd.date_range(
+                begining_training_month,
+                end_month_test - timedelta(days=1),
+                freq='d')
+
+            idx_train = [X.index.get_loc(date) for date in training_days]
+            idx_test = [X.index.get_loc(date) for date in testing_days]
+            begining_training_month = begining_training_month
             yield (
                 idx_train, idx_test
             )
