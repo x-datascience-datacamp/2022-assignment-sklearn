@@ -177,12 +177,10 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        X = X.reset_index()[self.time_col]
-        if not X.dtype == np.dtype('datetime64[ns]'):
-            raise ValueError('Column has incorrect dtype')
-        n_splits = len(np.unique(X.dt.to_period(freq='M'))) - 1
-
-        return n_splits
+        X_ = X.reset_index()[self.time_col]
+        if not X_.dtype == np.dtype('datetime64[ns]'):
+            raise ValueError('incorrect dtype')
+        return len(np.unique(X_.dt.to_period(freq="M"))) - 1
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -206,14 +204,16 @@ class MonthlySplit(BaseCrossValidator):
         """
         X = X.reset_index()
         n_splits = self.get_n_splits(X, y, groups)
-        column = X[self.time_col].dt.to_period(freq="M")
+        column = X[self.time_col].dt.to_period(freq='M')
         dates = np.unique(column)
+
+        idx_train = None
         idx_test = None
 
         for i in range(n_splits):
             cur_date = dates[i]
             next_date = dates[i+1]
-            if i == 0:
+            if idx_test is None:
                 idx_train = np.where(column == cur_date)[0]
             else:
                 idx_train = idx_test.copy()
