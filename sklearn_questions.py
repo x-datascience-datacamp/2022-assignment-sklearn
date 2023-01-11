@@ -49,7 +49,7 @@ to compute distances between 2 sets of samples.
 """
 
 import numpy as np
-import pandas as pd
+# import pandas as pd
 
 from sklearn.base import BaseEstimator
 from sklearn.base import ClassifierMixin
@@ -63,8 +63,23 @@ from sklearn.metrics.pairwise import pairwise_distances
 
 from collections import Counter
 
+
 def majority_vote(x):
+    """
+    Majority vote function.
+
+    Parameters
+    ----------
+    x : array-like of shape (n,)
+        The array in which to check for the most common element.
+
+    Returns
+    -------
+    y : same type as x.dtype
+        The most common element in x.
+    """
     return Counter(x).most_common(1)[0][0]
+
 
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
     """KNearestNeighbors classifier."""
@@ -112,12 +127,12 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         """
         check_is_fitted(self)
         X = check_array(X)
-        
 
         dists = pairwise_distances(X, self.X_)
-        closest = np.argpartition(dists, self.n_neighbors, axis=1)[:, :self.n_neighbors]
+        closest = np.argpartition(dists, self.n_neighbors, axis=1)[
+            :, :self.n_neighbors]
         classes = self.y_[closest]
-        
+
         y_pred = np.apply_along_axis(majority_vote, 1, classes)
 
         return y_pred
@@ -184,7 +199,7 @@ class MonthlySplit(BaseCrossValidator):
 
         if not X_.dtype == np.dtype('datetime64[ns]'):
             raise ValueError(f"Column dtype {X_.dtype} is not datetime64[ns]")
-        
+
         n_splits = len(np.unique(X_.dt.to_period(freq="M"))) - 1
 
         return n_splits
@@ -209,17 +224,25 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-
         X = X.reset_index()
         n_splits = self.get_n_splits(X, y, groups)
 
         month_year_dates = np.unique(X[self.time_col].dt.to_period(freq="M"))
 
+        next_month_year = None
+        idx_train = None
+        idx_test = None
+
         for i in range(n_splits):
             month_year = month_year_dates[i]
             next_month_year = month_year_dates[i+1]
-            idx_train = X.loc[(X[self.time_col] == month_year)]
-            idx_test = X.loc[(X[self.time_col] == next_month_year)]
+            if idx_test is None:
+                idx_train = np.where(
+                    X[self.time_col].dt.to_period(freq="M") == month_year)[0]
+            else:
+                idx_train = idx_test.copy()
+            idx_test = np.where(X[self.time_col].dt.to_period(
+                freq="M") == next_month_year)[0]
             yield (
                 idx_train, idx_test
             )
