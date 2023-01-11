@@ -59,6 +59,7 @@ from sklearn.utils.validation import check_X_y, check_is_fitted
 from sklearn.utils.validation import check_array
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.metrics.pairwise import pairwise_distances
+from sklearn.utils.multiclass import unique_labels
 
 
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
@@ -82,6 +83,14 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
+        X, y = check_X_y(X, y)
+        check_classification_targets(y)
+        self.X_ = X
+        self.y_ = y
+
+        self.classes_ = unique_labels(self.y_)
+        self.n_features_in_ = self.X_.shape[1]
+
         return self
 
     def predict(self, X):
@@ -97,8 +106,24 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
-        y_pred = np.zeros(X.shape[0])
-        return y_pred
+        check_is_fitted(self)
+        # checking if the model has been trained before
+        X = check_array(X)
+        # input validation
+        idx_eucl = pairwise_distances(X, self.X_)
+        # compute euclidean distance
+        idx_eucl = np.argsort(idx_eucl)[:, 0:self.n_neighbors]
+        # find the indices of the k closest samples
+        class_predictions = self.y_[idx_eucl]
+        # extract the class labels of the closest samples
+        predicted_classes = []
+        for y_pred_single in class_predictions:
+            unique_classes, indices = np.unique(
+                y_pred_single, return_inverse=True)
+            predicted_classes.append(
+                unique_classes[np.argmax(np.bincount(indices))])
+            # find the most common label
+        return np.array(predicted_classes)
 
     def score(self, X, y):
         """Calculate the score of the prediction.
@@ -115,7 +140,20 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        return 0.
+        check_is_fitted(self)
+        # Checking if the model has been trained before
+        X, y = check_X_y(X, y)
+        # Checking if X and y are under the good format
+        predicted_classes = self.predict(X)
+        # Predicting the classes
+        count_correct = 0
+        # Initializing the count of the number of correct predictions
+        for i in range(predicted_classes.shape[0]):
+            if predicted_classes[i] == y[i]:
+                count_correct += 1
+        # The score metric correspond to the number of correct predictions
+        # compared to the false predictions
+        return count_correct/predicted_classes.shape[0]
 
 
 class MonthlySplit(BaseCrossValidator):
@@ -155,7 +193,17 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        return 0
+        # check if the data is pandas series and convert it to dataframe
+        if type(X) == pd.Series:
+            X = X.to_frame()
+        # check if the index is not range index and reset the index
+        if type(X.index) != pd.RangeIndex:
+            X = X.reset_index()
+        # check if the time_col is of datetime format
+        if not np.issubdtype(X[self.time_col].dtype, np.datetime64):
+            raise ValueError('datetime')
+        # return the number of splits by re-sampling on a monthly basis
+        return len(X.resample('M', on=self.time_col)) - 1
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -177,12 +225,28 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-
-        n_samples = X.shape[0]
+        # check if the data is pandas series and convert it to dataframe
+        if type(X) == pd.Series:
+            X = X.to_frame()
+        # reset the index of the dataframe
+        X = X.reset_index()
+        # get the number of splits
         n_splits = self.get_n_splits(X, y, groups)
+        # re-sample the dataframe on a monthly basis
+        X_resampled = X.resample('M', on=self.time_col)
+        # create a helper function to get the indexes of the
+        # resampled dataframe
+
+        def index_array(array):
+            return array.index
+        # get the indexes of the resampled dataframe
+        idx_month = X_resampled.apply(index_array)
+        # iterate through all the splits
         for i in range(n_splits):
-            idx_train = range(n_samples)
-            idx_test = range(n_samples)
+            idx_train = idx_month.iloc[i]
+            idx_test = idx_month.iloc[i+1]
+            # assign the indexes of the current month as the training set and
+            # the next month as the test set
             yield (
-                idx_train, idx_test
+                idx_train.values, idx_test.values
             )
