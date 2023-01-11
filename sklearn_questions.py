@@ -106,12 +106,6 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         """
         check_is_fitted(self)
         X = check_array(X)
-        """
-        print(X)
-        distances = pairwise_distances(X, self.X_)
-        neighbors = np.argsort(distances, axis = 1)[:, :self.n_neighbors]
-        y_pred = np.array([np.unique(self.y_[neighbors[i, :]])[0] for i in range(neighbors.shape[0])])
-        """
         distances = pairwise_distances(self.X_, X)
         indices = np.argpartition(distances, kth=self.n_neighbors,
                                   axis=0)[:self.n_neighbors, :]
