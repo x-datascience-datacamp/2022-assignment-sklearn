@@ -89,7 +89,6 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
-
         self.X_, self.y_ = check_X_y(X, y, dtype="numeric")
         check_classification_targets(y)
         self.classes_ = np.unique(self.y_)
@@ -158,7 +157,6 @@ class MonthlySplit(BaseCrossValidator):
         for which this column is not a datetime, it will raise a ValueError.
         To use the index as column just set `time_col` to `'index'`.
     """
-
     def __init__(self, time_col="index"):  # noqa: D107
         self.time_col = time_col
 
@@ -207,7 +205,6 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-
         n_splits = self.get_n_splits(X, y, groups)
         new_X = X.sort_index().copy()
         new_X = new_X.reset_index()
