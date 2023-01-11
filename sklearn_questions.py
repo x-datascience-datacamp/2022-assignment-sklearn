@@ -111,9 +111,9 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
 
         dist = pairwise_distances(X, self.X_)
         i_neigh = dist.argsort(axis=1)[:, :self.n_neighbors]
-        pred = []
+        y_pred = []
         for i in range(len(i_neigh)):
-            pred.append(Counter(self.y_[i_neigh[i]]).most_common(1)[0][0])
+            y_pred.append(Counter(self.y_[i_neigh[i]]).most_common(1)[0][0])
 
         check_classification_targets(y_pred)
         return np.array(y_pred)
