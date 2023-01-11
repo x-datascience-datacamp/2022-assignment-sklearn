@@ -50,7 +50,6 @@ to compute distances between 2 sets of samples.
 import numpy as np
 import pandas as pd
 from statistics import mode
-from datetime import timedelta
 
 from sklearn.base import BaseEstimator
 from sklearn.base import ClassifierMixin
