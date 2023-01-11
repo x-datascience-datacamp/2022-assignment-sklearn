@@ -108,13 +108,13 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         """
         check_is_fitted(self)
         # checking if the model has been trained before
-        X = check_array(X)  
+        X = check_array(X)
         # input validation
-        idx_eucl = pairwise_distances(X, self.X_)  
+        idx_eucl = pairwise_distances(X, self.X_)
         # compute euclidean distance
-        idx_eucl = np.argsort(idx_eucl)[:, 0:self.n_neighbors]  
+        idx_eucl = np.argsort(idx_eucl)[:, 0:self.n_neighbors]
         # find the indices of the k closest samples
-        class_predictions = self.y_[idx_eucl]  
+        class_predictions = self.y_[idx_eucl]
         # extract the class labels of the closest samples
         predicted_classes = []
         for y_pred_single in class_predictions:
