@@ -1,4 +1,5 @@
 """Assignment - making a sklearn estimator and cv splitter.
+
 The goal of this assignment is to implement by yourself:
 - a scikit-learn estimator for the KNearestNeighbors for classification
   tasks and check that it is working properly.
@@ -51,17 +52,20 @@ from sklearn.metrics.pairwise import pairwise_distances
 
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
     """KNearestNeighbors classifier."""
+
     def __init__(self, n_neighbors=1):  # noqa: D107
         self.n_neighbors = n_neighbors
 
     def fit(self, X, y):
         """Fitting function.
+
          Parameters
         ----------
         X : ndarray, shape (n_samples, n_features)
             Data to train the model.
         y : ndarray, shape (n_samples,)
             Labels associated with the training data.
+
         Returns
         ----------
         self : instance of KNearestNeighbors
@@ -79,10 +83,12 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
 
     def predict(self, X):
         """Predict function.
+
         Parameters
         ----------
         X : ndarray, shape (n_test_samples, n_features)
             Data to predict on.
+
         Returns
         ----------
         y : ndarray, shape (n_test_samples,)
@@ -110,27 +116,31 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
 
     def score(self, X, y):
         """Calculate the score of the prediction.
+
         Parameters
         ----------
         X : ndarray, shape (n_samples, n_features)
             Data to score on.
         y : ndarray, shape (n_samples,)
             target values.
+
         Returns
         ----------
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
         y_pred = self.predict(X)
-        accuracy = (y == y_pred).sum() / len(y)
-        return accuracy
+        acc = (y == y_pred).sum() / len(y)
+        return acc
 
 
 class MonthlySplit(BaseCrossValidator):
     """CrossValidator based on monthly split.
+
     Split data based on the given `time_col` (or default to index). Each split
     corresponds to one month of data for the training and the next month of
     data for the test.
+
     Parameters
     ----------
     time_col : str, defaults to 'index'
@@ -145,6 +155,7 @@ class MonthlySplit(BaseCrossValidator):
 
     def get_n_splits(self, X, y=None, groups=None):
         """Return the number of splitting iterations in the cross-validator.
+
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
@@ -154,6 +165,7 @@ class MonthlySplit(BaseCrossValidator):
             Always ignored, exists for compatibility.
         groups : array-like of shape (n_samples,)
             Always ignored, exists for compatibility.
+
         Returns
         -------
         n_splits : int
@@ -170,6 +182,7 @@ class MonthlySplit(BaseCrossValidator):
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
+
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
@@ -179,6 +192,7 @@ class MonthlySplit(BaseCrossValidator):
             Always ignored, exists for compatibility.
         groups : array-like of shape (n_samples,)
             Always ignored, exists for compatibility.
+
         Yields
         ------
         idx_train : ndarray
