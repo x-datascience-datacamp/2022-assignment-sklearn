@@ -105,15 +105,12 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         """
         check_is_fitted(self)
         X = check_array(X)
-        y_pred = []
-        for i in range(X.shape[0]):
-            X_concatinated = np.concatenate([[X[i, :]], self.X_train_])
-            distances = pairwise_distances(X_concatinated)
-            indecies = np.argsort(distances, axis=1)[0, 1:self.n_neighbors+1]
-            labels = self.y_train_[indecies-1]
-            pred_label = mode(labels)
-            y_pred.append(pred_label)
-        y_pred = np.array(y_pred)
+        distances = pairwise_distances(self.X_train_, X)
+        indexes = np.argpartition(
+            distances, kth=self.n_neighbors, axis=0
+            )[:self.n_neighbors, :]
+        y_pred = self.y_train_[indexes]
+        y_pred = mode(y_pred, axis=0)[0].squeeze()
         return y_pred
 
     def score(self, X, y):
@@ -132,7 +129,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
             Accuracy of the model computed for the (X, y) pairs.
         """
         y_pred = self.predict(X)
-        score = np.sum(y_pred == y) / (len(y))
+        score = np.mean(y_pred == y)
         return score
 
 
@@ -174,18 +171,10 @@ class MonthlySplit(BaseCrossValidator):
             The number of splits.
         """
         X = X.reset_index()
-        X = X.set_index(self.time_col)
-        if (X.index.inferred_type != "datetime64"):
-            raise ValueError("datetime")
-        date_start = X.index.min()
-        date_end = X.index.max()
-        numbers_of_days = (date_end - date_start).days
-        number_of_splits = (numbers_of_days // 30) - 1
-        X = X.reset_index()
+        date = X[self.time_col]
         if not isinstance(X[self.time_col][0], pd.Timestamp):
             raise ValueError("We don't have a datetime column")
-        date_start = X[self.time_col]
-        return number_of_splits
+        return date.dt.to_period('M').nunique()-1
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -209,26 +198,12 @@ class MonthlySplit(BaseCrossValidator):
         """
         n_splits = self.get_n_splits(X, y, groups)
         X = X.reset_index()
-        X = X.set_index(self.time_col)
-        begining_training_month = X.index.min()
+        date = X[self.time_col]
+        period = date.dt.to_period('M')
+        month = np.sort(period.unique())
         for i in range(n_splits):
-            ending_training_month = begining_training_month.replace(
-                day=begining_training_month.days_in_month)
-            training_days = pd.date_range(
-                begining_training_month,
-                ending_training_month - timedelta(days=1),
-                freq='d')
-            begining_training_month = ending_training_month + timedelta(days=1)
-            end_month_test = begining_training_month.replace(
-                day=begining_training_month.days_in_month)
-            testing_days = pd.date_range(
-                begining_training_month,
-                end_month_test - timedelta(days=1),
-                freq='d')
-
-            idx_train = [X.index.get_loc(date) for date in training_days]
-            idx_test = [X.index.get_loc(date) for date in testing_days]
-            begining_training_month = begining_training_month
+            idx_train = X[period == month[i]].index.tolist()
+            idx_test = X[period == month[i + 1]].index.tolist()
             yield (
                 idx_train, idx_test
             )
