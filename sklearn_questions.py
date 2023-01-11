@@ -178,8 +178,9 @@ class MonthlySplit(BaseCrossValidator):
             The number of splits.
         """
         column = X.reset_index()[self.time_col]
-        if not column.dtype == np.datetime64:
-            raise ValueError('column type is not datetime')
+        if not X.dtype == np.dtype('datetime64'):
+            raise ValueError('Column dtype is incorrect')
+
         return len(np.unique(column.dt.to_period(freq='M'))) - 1
 
     def split(self, X, y, groups=None):
