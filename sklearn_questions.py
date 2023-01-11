@@ -61,6 +61,7 @@ from sklearn.utils.validation import check_X_y, check_is_fitted
 from sklearn.utils.validation import check_array
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.metrics.pairwise import pairwise_distances
+from pandas.core.dtypes.common import is_datetime64_any_dtype
 
 
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
@@ -90,6 +91,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self.y_ = y
         self.n_features_in_ = X.shape[1]
         self.classes_ = unique_labels(y)
+
         return self
 
     def predict(self, X):
@@ -177,23 +179,15 @@ class MonthlySplit(BaseCrossValidator):
         if type(X) == pd.Series:
             X = X.to_frame()
 
-        X = X.reset_index()
+        if type(X.index) != pd.RangeIndex:
+            X = X.reset_index()
 
-        n_splits = self.get_n_splits(X, y, groups)
+        if not is_datetime64_any_dtype(X[self.time_col]):
+            raise ValueError('datetime')
 
-        X_resampled = X.resample('M', on=self.time_col)
+        return len(X.resample('M', on=self.time_col)) - 1
 
-        def index_array(array):
-            return array.index
-
-        idx_month = X_resampled.apply(index_array)
-
-        for i in range(n_splits):
-            idx_train = idx_month.iloc[i]
-            idx_test = idx_month.iloc[i+1]
-            yield (
-                idx_train.values, idx_test.values
-            )
+    def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
 
         Parameters
@@ -214,11 +208,23 @@ class MonthlySplit(BaseCrossValidator):
             The testing set indices for that split.
         """
 
-        n_samples = X.shape[0]
+        if type(X) == pd.Series:
+            X = X.to_frame()
+
+        X = X.reset_index()
+
         n_splits = self.get_n_splits(X, y, groups)
+
+        X_resampled = X.resample('M', on=self.time_col)
+
+        def index_array(array):
+            return array.index
+
+        idx_month = X_resampled.apply(index_array)
+
         for i in range(n_splits):
-            idx_train = range(n_samples)
-            idx_test = range(n_samples)
+            idx_train = idx_month.iloc[i]
+            idx_test = idx_month.iloc[i+1]
             yield (
-                idx_train, idx_test
+                idx_train.values, idx_test.values
             )
