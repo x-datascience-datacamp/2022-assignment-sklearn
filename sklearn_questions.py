@@ -206,6 +206,7 @@ class MonthlySplit(BaseCrossValidator):
         n_splits = self.get_n_splits(X, y, groups)
         column = X[self.time_col].dt.to_period(freq="M")
         dates = np.unique(column)
+        idx_test = None
 
         for i in range(n_splits):
             cur_date = dates[i]
