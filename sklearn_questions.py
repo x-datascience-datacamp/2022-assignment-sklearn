@@ -63,8 +63,7 @@ import scipy.stats as stats
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
     """KNearestNeighbors classifier."""
 
-    def __init__(self, n_neighbors=1):  # noqa: D107
-
+    def __init__(self, n_neighbors=1):  
         self.n_neighbors = n_neighbors
 
     def fit(self, X, y):
@@ -193,7 +192,6 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-
         if type(X) == pd.Series:
             X = X.to_frame()
         X = X.reset_index()
