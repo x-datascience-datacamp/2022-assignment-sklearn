@@ -210,6 +210,9 @@ class MonthlySplit(BaseCrossValidator):
         for i in range(n_splits):
             cur_date = dates[i]
             next_date = dates[i+1]
-            idx_train = np.where(column == cur_date)[0]
+            if i == 0:
+                idx_train = np.where(column == cur_date)[0]
+            else:
+                idx_train = idx_test.copy()
             idx_test = np.where(column == next_date)[0]
-            yield idx_train, idx_test
+            yield (idx_train, idx_test)
