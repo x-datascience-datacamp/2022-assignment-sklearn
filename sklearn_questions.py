@@ -105,12 +105,15 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         """
         check_is_fitted(self)
         X = check_array(X)
-        distances = pairwise_distances(self.X_train_, X)
-        indexes = np.argpartition(
-            distances, kth=self.n_neighbors, axis=0
-            )[:self.n_neighbors, :]
-        y_pred = self.y_train_[indexes]
-        y_pred = mode(y_pred, axis=0)[0].squeeze()
+        y_pred = []
+        for i in range(X.shape[0]):
+            X_concatinated = np.concatenate([[X[i, :]], self.X_train_])
+            distances = pairwise_distances(X_concatinated)
+            indecies = np.argsort(distances, axis=1)[0, 1:self.n_neighbors+1]
+            labels = self.y_train_[indecies-1]
+            pred_label = mode(labels)
+            y_pred.append(pred_label)
+        y_pred = np.array(y_pred)
         return y_pred
 
     def score(self, X, y):
