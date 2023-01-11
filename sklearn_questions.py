@@ -193,12 +193,16 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
+        # check if the data is pandas series and convert it to dataframe
         if type(X) == pd.Series:
             X = X.to_frame()
+        # check if the index is not range index and reset the index
         if type(X.index) != pd.RangeIndex:
             X = X.reset_index()
+        # check if the time_col is of datetime format
         if not np.issubdtype(X[self.time_col].dtype, np.datetime64):
             raise ValueError('datetime')
+        # return the number of splits by re-sampling on a monthly basis
         return len(X.resample('M', on=self.time_col)) - 1
 
     def split(self, X, y, groups=None):
@@ -221,20 +225,28 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
+        # check if the data is pandas series and convert it to dataframe
         if type(X) == pd.Series:
             X = X.to_frame()
-
+        # reset the index of the dataframe
         X = X.reset_index()
+        # get the number of splits
         n_splits = self.get_n_splits(X, y, groups)
+        # re-sample the dataframe on a monthly basis
         X_resampled = X.resample('M', on=self.time_col)
+        # create a helper function to get the indexes of the
+        # resampled dataframe
 
         def index_array(array):
             return array.index
-
+        # get the indexes of the resampled dataframe
         idx_month = X_resampled.apply(index_array)
+        # iterate through all the splits
         for i in range(n_splits):
             idx_train = idx_month.iloc[i]
             idx_test = idx_month.iloc[i+1]
+            # assign the indexes of the current month as the training set and
+            # the next month as the test set
             yield (
                 idx_train.values, idx_test.values
             )
