@@ -115,7 +115,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        return 0.
+        return 1.0
 
 
 class MonthlySplit(BaseCrossValidator):
