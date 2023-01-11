@@ -166,6 +166,12 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
+        if self.time_col != "index":
+            X = X.set_index(self.time_col)
+
+        if not pd.api.types.is_datetime64_any_dtype(X.index):
+            raise ValueError("time_col must be a datetime column")
+
         return len(X.resample("M").count()) - 1
 
     def split(self, X, y, groups=None):
@@ -188,16 +194,16 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-        # Test if the cross-validator works as expected even if
-        # the data is 1d
-        if X.ndim == 1:
-            X = X.to_frame()
-
-        X.index = pd.to_datetime(X.index)
         n_samples = X.shape[0]
         n_splits = self.get_n_splits(X, y, groups)
         indices = np.arange(n_samples)
+        if self.time_col == "index":
+            months = X.index.to_period("M")
+        else:
+            months = pd.to_datetime(X[self.time_col]).dt.to_period("M")
+
         for i in range(n_splits):
-            idx_train = X.index[indices[X.index.month == i]]
-            idx_test = X.index[indices[X.index.month == i + 1]]
-            yield idx_train, idx_test
+            months_sorted = months.sort_values().unique()
+            idx_train = indices[months == months_sorted[i]]
+            idx_test = indices[months == months_sorted[i + 1]]
+            yield (idx_train, idx_test)
