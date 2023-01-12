@@ -105,18 +105,18 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         check_is_fitted(self)
         X = check_array(X)
 
+        n_test_samples = X.shape[0]
+        y_pred = np.zeros(n_test_samples)
+
         y_pred = []
+        distances = pairwise_distances(
+            X,
+            self.value_
+        )
+        dic = np.argsort(distances)[:, :self.n_neighbors]
+        k = self.label_[dic]
 
-        for x in X:
-            distances = pairwise_distances(
-                np.concatenate(x, self.value_, axis=0))
-            distances = distances[0][1:]
-
-            dic = {d: self.label[i] for i, d in enumerate(distances)}
-            dic = sorted(dic.items(), key=lambda x: x[1])
-
-            k = [x[1] for x in dic[:self.n_neighbors]]
-            y_pred.append(max(set(k), key=k.count))
+        y_pred = [max(set(list(x)), key=list(x).count) for x in k]
 
         return y_pred
 
