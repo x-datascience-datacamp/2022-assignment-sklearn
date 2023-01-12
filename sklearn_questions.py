@@ -88,6 +88,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         check_classification_targets(y)
         self.X_ = X
         self.y_ = y
+        self.n_features_in_ = X.shape[1]
         self.classes_ = np.unique(self.y_)
         return self
 
@@ -104,7 +105,6 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
-
         check_is_fitted(self)
         X = check_array(X)
         dist = pairwise_distances(self.X_, X)
