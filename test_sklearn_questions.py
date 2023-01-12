@@ -32,7 +32,6 @@ def test_one_nearest_neighbor_match_sklearn(k):
     assert onn.score(X_test, y_test) == knn.score(X_test, y_test)
 
 
-
 @pytest.mark.parametrize("k", [1, 3, 5, 7])
 def test_one_nearest_neighbor_check_estimator(k):
     check_estimator(KNearestNeighbors(n_neighbors=k))
