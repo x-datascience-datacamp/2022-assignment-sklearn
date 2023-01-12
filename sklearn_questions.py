@@ -169,7 +169,8 @@ class MonthlySplit(BaseCrossValidator):
         """
         X = X.reset_index()
         if not isinstance(X[self.time_col].iloc[0], pd.Timestamp):
-            raise ValueError
+            raise ValueError('X does not contain datetime')
+
         return X[self.time_col].dt.to_period("M").nunique() - 1
 
     def split(self, X, y, groups=None):
@@ -192,14 +193,14 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-        n_splits = self.get_n_splits(X, y)
+        n_splits = self.get_n_splits(X, y, groups)
         X = X.reset_index()
         date_column = X[self.time_col]
         period_month_year = X.resample("M", on=self.time_col).count(
         ).sort_index().index.map(lambda x: (x.month, x.year))
         for i in range(n_splits):
             idx_train = X[(date_column.dt.month == period_month_year[i][0]) & (
-                date_column.dt.year == period_month_year[i][1])].to_numpy()
+                date_column.dt.year == period_month_year[i][1])]
             idx_test = X[(date_column.dt.month == period_month_year[i+1][0]) &
-                         (date_column.dt.year == period_month_year[i+1][1])].to_numpy()
-            yield idx_train, idx_test
+                         (date_column.dt.year == period_month_year[i+1][1])]
+            yield (idx_train.to_numpy(), idx_test.to_numpy())
