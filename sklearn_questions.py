@@ -196,11 +196,12 @@ class MonthlySplit(BaseCrossValidator):
         n_splits = self.get_n_splits(X, y, groups)
         X = X.reset_index()
         date_column = X[self.time_col]
-        period_month_year = X.resample("M", on=self.time_col).count(
-        ).sort_index().index.map(lambda x: (x.month, x.year))
+        period = X.resample("M", on=self.time_col).count(
+        ).sort_index().index
+        period_month_year = period.map(lambda x: (x.month, x.year))
         for i in range(n_splits):
             idx_train = X[(date_column.dt.month == period_month_year[i][0]) & (
-                date_column.dt.year == period_month_year[i][1])]
+                date_column.dt.year == period_month_year[i][1])].index
             idx_test = X[(date_column.dt.month == period_month_year[i+1][0]) &
-                         (date_column.dt.year == period_month_year[i+1][1])]
+                         (date_column.dt.year == period_month_year[i+1][1])].index
             yield (idx_train.to_numpy(), idx_test.to_numpy())
