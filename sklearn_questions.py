@@ -67,9 +67,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
     """KNearestNeighbors classifier."""
 
     def __init__(self, n_neighbors=1):
-        """
-        Initialise the model
-        """
+        """Initialise the model"""
         self.n_neighbors = n_neighbors
 
     def fit(self, X, y):
