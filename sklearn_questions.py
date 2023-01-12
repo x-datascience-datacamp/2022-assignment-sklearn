@@ -49,6 +49,7 @@ to compute distances between 2 sets of samples.
 """
 import numpy as np
 import pandas as pd
+import scipy.stats as stats
 
 from sklearn.base import BaseEstimator
 from sklearn.base import ClassifierMixin
@@ -82,6 +83,10 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
+        self.X_, self.y_ = check_X_y(X, y)
+        check_classification_targets(self.y)
+        self.classes = np.unique(self.y)
+        self.n_features_in_ = self.X.shape[1]
         return self
 
     def predict(self, X):
@@ -97,7 +102,12 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
-        y_pred = np.zeros(X.shape[0])
+        check_is_fitted(self)
+        X = check_array(X)
+        dist = pairwise_distances(self.X_, X)
+        idx = np.argpartition(dist, kth=self.n_neighbors, axis=0)[: self.n_neighbors, :]
+        y = self.y[idx]
+        y_pred = stats.mode(y, axis=0)[0].squeeze()
         return y_pred
 
     def score(self, X, y):
@@ -115,7 +125,8 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        return 0.
+        y_pred = self.predict(X)
+        return np.mean(y_pred == y)
 
 
 class MonthlySplit(BaseCrossValidator):
@@ -134,7 +145,7 @@ class MonthlySplit(BaseCrossValidator):
         To use the index as column just set `time_col` to `'index'`.
     """
 
-    def __init__(self, time_col='index'):  # noqa: D107
+    def __init__(self, time_col="index"):  # noqa: D107
         self.time_col = time_col
 
     def get_n_splits(self, X, y=None, groups=None):
@@ -155,7 +166,10 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        return 0
+        X = X.reset_index()
+        if not isinstance(X[self.time_col].iloc[0], pd.Timestamp):
+            raise ValueError
+        return X[self.time_col].dt.to_period("M").nunique() - 1
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -181,8 +195,12 @@ class MonthlySplit(BaseCrossValidator):
         n_samples = X.shape[0]
         n_splits = self.get_n_splits(X, y, groups)
         for i in range(n_splits):
-            idx_train = range(n_samples)
-            idx_test = range(n_samples)
-            yield (
-                idx_train, idx_test
-            )
+            idx_train = X.index[
+                X[self.time_col].dt.to_period("M")
+                == X[self.time_col].dt.to_period("M").unique()[i]
+            ]
+            idx_test = X.index[
+                X[self.time_col].dt.to_period("M")
+                == X[self.time_col].dt.to_period("M").unique()[i + 1]
+            ]
+            yield (idx_train, idx_test)
