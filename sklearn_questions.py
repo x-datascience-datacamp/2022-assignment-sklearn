@@ -135,7 +135,6 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-
         y_pred = self.predict(X)
         accuracy = np.mean(y == y_pred)
 
@@ -209,7 +208,6 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-
         n_splits = self.get_n_splits(X, y, groups)
 
         X = X.reset_index()
