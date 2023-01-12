@@ -174,7 +174,7 @@ class MonthlySplit(BaseCrossValidator):
         X = X.reset_index()
         time_column = X[self.time_col]
         if not isinstance(X[self.time_col][0], pd.Timestamp):
-            raise ValueError(f"Column dtype {time_column.dtype} is not datetime64[ns]")
+            raise ValueError(f"Column type {time_column.dtype} not datetime")
         return time_column.dt.to_period("M").nunique() - 1
 
     def split(self, X, y, groups=None):
