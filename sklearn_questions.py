@@ -127,7 +127,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        return np.sum(self.predict(X) == y) /y.shape[0]
+        return np.sum(self.predict(X) == y) / y.shape[0]
 
 
 class MonthlySplit(BaseCrossValidator):
@@ -199,7 +199,8 @@ class MonthlySplit(BaseCrossValidator):
         X = X.reset_index()
         n_samples = X.shape[0]
         n_splits = self.get_n_splits(X, y, groups)
-        idx_month = X.resample('M', on=self.time_col).apply(lambda array: array.index)
+        idx_month = X.resample('M', on=self.time_col)\
+            .apply(lambda array: array.index)
         for i in range(n_splits):
             idx_train = range(n_samples)
             idx_test = range(n_samples)
