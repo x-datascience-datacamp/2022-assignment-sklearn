@@ -87,6 +87,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
 
         self.value_ = X
         self.label_ = y
+        self.classes_ = np.unique(self.label_)
 
         return self
 
