@@ -48,6 +48,7 @@ from sklearn.metrics.pairwise import pairwise_distances
 to compute distances between 2 sets of samples.
 """
 import numpy as np
+import pandas as pd
 
 from sklearn.base import BaseEstimator
 from sklearn.base import ClassifierMixin
@@ -181,12 +182,11 @@ class MonthlySplit(BaseCrossValidator):
         X = X.reset_index()
         date = X[self.time_col]
 
-        try:
-            year_month = date.map(lambda x: (x.year, x.month))
-        except AttributeError:
-            raise ValueError("This is not datetime")
+        if not isinstance(date[0], pd.Timestamp):
+            raise ValueError('X does not contains datetime')
 
-        return len(year_month.unique()) - 1
+        n_splits = date.dt.to_period('M').nunique() - 1
+        return n_splits
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -212,16 +212,17 @@ class MonthlySplit(BaseCrossValidator):
 
         X = X.reset_index()
         date = X[self.time_col]
-        year_month = date.map(lambda x: (x.year, x.month))
-        months = np.sort(year_month.unique())
+        period = X.resample("M", on=self.time_col).count().sort_index().index
+        mont_year = period.map(lambda x: (x.month, x.year))
 
         for i in range(n_splits):
-            year, month = months[i]
-            idx_train = X[
-                (date.dt.year == year) & (date.dt.month == month)
-            ].index.to_numpy()
-            year, month = months[i + 1]
-            idx_test = X[
-                (date.dt.year == year) & (date.dt.month == month)
-            ].index.to_numpy()
-            yield (idx_train, idx_test)
+            df_train = X[
+                (date.dt.month == mont_year[i][0]) &
+                (date.dt.year == mont_year[i][1])
+            ]
+            df_test = X[
+                (date.dt.month == mont_year[i+1][0]) &
+                (date.dt.year == mont_year[i+1][1])
+            ]
+
+            yield (df_train.index.to_numpy(), df_test.index.to_numpy())
