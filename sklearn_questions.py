@@ -117,7 +117,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         dic = np.argsort(distances)[:, :self.n_neighbors]
         k = self.label_[dic]
 
-        y_pred = [max(set(list(x)), key=list(x).count) for x in k]
+        y_pred = np.array([max(set(list(x)), key=list(x).count) for x in k])
 
         return y_pred
 
