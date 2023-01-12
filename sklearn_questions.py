@@ -135,7 +135,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
 
 class MonthlySplit(BaseCrossValidator):
     """KNearestNeighbors classifier."""
-    
+
     def __init__(self, time_col='index'):  # noqa: D107
         self.time_col = time_col
 
