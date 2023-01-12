@@ -83,7 +83,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
-        self.X_, self.y_ = check_X_y(X,y)
+        self.X_, self.y_ = check_X_y(X, y)
         check_classification_targets(self.y_)
         self.classes_ = np.unique(self.y_)
         self.n_features_in_ = self.X_.shape[1]
@@ -105,8 +105,10 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         check_is_fitted(self)
         X = check_array(X)
         dist = pairwise_distances(self.X_, X)
-        #indices = np.argsort(dist, axis=1)[:, :self.n_neighbors]
-        indexes = np.argpartition(dist, kth=self.n_neighbors, axis=0)[:self.n_neighbors, :]
+        indexes = np.argpartition(
+            dist,
+            kth=self.n_neighbors,
+            axis=0)[:self.n_neighbors, :]
         y = self.y_[indexes]
         y = sc.stats.mode(y, axis=0)
         y_pred = y[0].squeeze()
