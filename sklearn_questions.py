@@ -107,9 +107,9 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         X = check_array(X)
         y_pred = np.zeros(X.shape[0])
         distances = pairwise_distances(X, self.X_, metric='euclidean')
-        knn_indices = np.argsort(distances, axis=1)[:, :self.n_neighbors]
-        knn_labels = self.y_[knn_indices]
-        y_pred = np.array(stats.mode(knn_labels, axis=1)[0].ravel())
+        indices = np.argsort(distances, axis=1)[:, :self.n_neighbors]
+        labels = self.y_[indices]
+        y_pred = np.array(stats.mode(labels, axis=1)[0].ravel())
         return y_pred
 
     def score(self, X, y):
@@ -168,10 +168,11 @@ class MonthlySplit(BaseCrossValidator):
             The number of splits.
         """
         X = X.reset_index()
-        time_column = X[self.time_col]
+        col_dt = X[self.time_col]
         if not isinstance(X[self.time_col][0], pd.Timestamp):
-            raise ValueError(f"Column type {time_column.dtype} not datetime")
-        return time_column.dt.to_period("M").nunique() - 1
+            raise ValueError(f"Column type {col_dt.dtype} is\
+                             not of datetime format")
+        return col_dt.dt.to_period("M").nunique() - 1
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -193,17 +194,11 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-        if type(X) == pd.Series:
-            X = X.to_frame()
-
         X = X.reset_index()
-        n_samples = X.shape[0]
         n_splits = self.get_n_splits(X, y, groups)
         idx_month = X.resample('M', on=self.time_col)\
             .apply(lambda array: array.index)
         for i in range(n_splits):
-            idx_train = range(n_samples)
-            idx_test = range(n_samples)
             idx_train = idx_month.iloc[i]
             idx_test = idx_month.iloc[i+1]
             yield (idx_train.values, idx_test.values)
