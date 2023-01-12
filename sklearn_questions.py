@@ -67,6 +67,9 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
     """KNearestNeighbors classifier."""
 
     def __init__(self, n_neighbors=1):
+        """
+        Initialise the model
+        """
         self.n_neighbors = n_neighbors
 
     def fit(self, X, y):
@@ -194,7 +197,6 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-
         n_splits = self.get_n_splits(X, y, groups)
         X2 = X.sort_index().copy()
         X = X.reset_index()
