@@ -110,7 +110,6 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         n_test_samples = X.shape[0]
         y_pred = np.zeros(n_test_samples)
 
-        y_pred = []
         distances = pairwise_distances(
             X,
             self.value_
