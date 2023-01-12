@@ -134,20 +134,20 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
 
 
 class MonthlySplit(BaseCrossValidator):
-    """CrossValidator based on monthly split.
+        """Calculate the score of the prediction.
 
-    Split data based on the given `time_col` (or default to index). Each split
-    corresponds to one month of data for the training and the next month of
-    data for the test.
+        Parameters
+        ----------
+        X : ndarray, shape (n_samples, n_features)
+            Data to score on.
+        y : ndarray, shape (n_samples,)
+            target values.
 
-    Parameters
-    ----------
-    time_col : str, defaults to 'index'
-        Column of the input DataFrame that will be used to split the data. This
-        column should be of type datetime. If split is called with a DataFrame
-        for which this column is not a datetime, it will raise a ValueError.
-        To use the index as column just set `time_col` to `'index'`.
-    """
+        Returns
+        ----------
+        score : float
+            Accuracy of the model computed for the (X, y) pairs.
+        """
     def __init__(self, time_col='index'):  # noqa: D107
         self.time_col = time_col
 
