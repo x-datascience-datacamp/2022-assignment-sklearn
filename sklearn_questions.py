@@ -84,8 +84,8 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
             The current instance of the classifier
         """
         self.X_, self.y_ = check_X_y(X, y)
-        check_classification_targets(self.y)
-        self.classes = np.unique(self.y)
+        check_classification_targets(self.y_)
+        self.classes = np.unique(self.y_)
         self.n_features_in_ = self.X_.shape[1]
         return self
 
