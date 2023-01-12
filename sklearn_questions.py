@@ -134,20 +134,8 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
 
 
 class MonthlySplit(BaseCrossValidator):
-        """Calculate the score of the prediction.
-
-        Parameters
-        ----------
-        X : ndarray, shape (n_samples, n_features)
-            Data to score on.
-        y : ndarray, shape (n_samples,)
-            target values.
-
-        Returns
-        ----------
-        score : float
-            Accuracy of the model computed for the (X, y) pairs.
-        """
+    """KNearestNeighbors classifier."""
+    
     def __init__(self, time_col='index'):  # noqa: D107
         self.time_col = time_col
 
