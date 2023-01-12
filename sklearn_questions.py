@@ -86,7 +86,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self.X_, self.y_ = check_X_y(X, y)
         check_classification_targets(self.y)
         self.classes = np.unique(self.y)
-        self.n_features_in_ = self.X.shape[1]
+        self.n_features_in_ = self.X_.shape[1]
         return self
 
     def predict(self, X):
@@ -105,8 +105,9 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         check_is_fitted(self)
         X = check_array(X)
         dist = pairwise_distances(self.X_, X)
-        idx = np.argpartition(dist, kth=self.n_neighbors, axis=0)[: self.n_neighbors, :]
-        y = self.y[idx]
+        idx = np.argpartition(dist, kth=self.n_neighbors,
+                              axis=0)[: self.n_neighbors, :]
+        y = self.y_[idx]
         y_pred = stats.mode(y, axis=0)[0].squeeze()
         return y_pred
 
@@ -191,9 +192,9 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-
-        n_samples = X.shape[0]
-        n_splits = self.get_n_splits(X, y, groups)
+        n_splits = self.get_n_splits(X, y)
+        X.sort_index(inplace=True)
+        X = X.reset_index()
         for i in range(n_splits):
             idx_train = X.index[
                 X[self.time_col].dt.to_period("M")
