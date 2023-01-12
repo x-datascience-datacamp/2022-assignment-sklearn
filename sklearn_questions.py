@@ -201,7 +201,7 @@ class MonthlySplit(BaseCrossValidator):
         period_month_year = period.map(lambda x: (x.month, x.year))
         for i in range(n_splits):
             idx_train = X[(date_column.dt.month == period_month_year[i][0]) & (
-                date_column.dt.year == period_month_year[i][1])].index
+                date_column.dt.year == period_month_year[i][1])]
             idx_test = X[(date_column.dt.month == period_month_year[i+1][0]) &
-                         (date_column.dt.year == period_month_year[i+1][1])].index
-            yield (idx_train.to_numpy(), idx_test.to_numpy())
+                         (date_column.dt.year == period_month_year[i+1][1])]
+            yield (idx_train.index.to_numpy(), idx_test.index.to_numpy())
