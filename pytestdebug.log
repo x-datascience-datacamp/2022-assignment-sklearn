@@ -1,0 +1,412 @@
+versions pytest-5.2.1, py-1.10.0, python-3.8.0.final.0
+cwd=C:\Users\Dell\PycharmProjects\Desktop\M2DS\DataCamp\2022-assignment-sklearn
+args=['.\\test_sklearn_questions.py', '--debug', 'c:']
+
+  pytest_cmdline_main [hook]
+      config: <_pytest.config.Config object at 0x00000201334E2CD0>
+    pytest_plugin_registered [hook]
+        plugin: <Session 2022-assignment-sklearn exitstatus='<UNSET>' testsfailed=0 testscollected=0>
+        manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+    finish pytest_plugin_registered --> [] [hook]
+    pytest_configure [hook]
+        config: <_pytest.config.Config object at 0x00000201334E2CD0>
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.cacheprovider.LFPlugin object at 0x00000201506E5040>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.cacheprovider.NFPlugin object at 0x00000201506D0FD0>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+    early skip of rewriting module: faulthandler [assertion]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.stepwise.StepwisePlugin object at 0x00000201506C7730>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.config.Config object at 0x00000201334E2CD0>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.mark' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\mark\\__init__.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.main' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\main.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.runner' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\runner.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.fixtures' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\fixtures.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.helpconfig' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\helpconfig.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.python' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\python.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.terminal' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\terminal.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.debugging' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\debugging.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.unittest' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\unittest.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.capture' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\capture.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.skipping' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\skipping.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.tmpdir' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\tmpdir.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.monkeypatch' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\monkeypatch.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.recwarn' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\recwarn.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.pastebin' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\pastebin.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.nose' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\nose.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.assertion' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\assertion\\__init__.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.junitxml' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\junitxml.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.resultlog' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\resultlog.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.doctest' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\doctest.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.cacheprovider' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\cacheprovider.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.freeze_support' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\freeze_support.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.setuponly' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\setuponly.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.setupplan' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\setupplan.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.stepwise' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\stepwise.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.warnings' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\warnings.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.logging' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\logging.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.reports' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\reports.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.faulthandler' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\faulthandler.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module 'anyio.pytest_plugin' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\anyio\\pytest_plugin.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module 'pytest_arraydiff.plugin' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\pytest_arraydiff\\plugin.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module 'pytest_doctestplus.plugin' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\pytest_doctestplus\\plugin.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module 'pytest_openfiles.plugin' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\pytest_openfiles\\plugin.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module 'pytest_remotedata.plugin' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\pytest_remotedata\\plugin.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module 'typeguard.pytest_plugin' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\typeguard\\pytest_plugin.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <CaptureManager _method='fd' _global_capturing=<MultiCapture out=<FDCapture 1 oldfd=8 _state='suspended'> err=<FDCapture 2 oldfd=9 _state='suspended'> in_=<FDCapture 0 oldfd=6 _state='started'> _state='suspended' _in_suspended='<UNSET>'> _current_item=None>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <Session 2022-assignment-sklearn exitstatus=<ExitCode.OK: 0> testsfailed=0 testscollected=0>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.cacheprovider.LFPlugin object at 0x00000201506E5040>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.cacheprovider.NFPlugin object at 0x00000201506D0FD0>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.stepwise.StepwisePlugin object at 0x00000201506C7730>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.terminal.TerminalReporter object at 0x0000020150669CA0>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.logging.LoggingPlugin object at 0x00000201506F64F0>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+    finish pytest_configure --> [] [hook]
+    pytest_sessionstart [hook]
+        session: <Session 2022-assignment-sklearn exitstatus=<ExitCode.OK: 0> testsfailed=0 testscollected=0>
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.config.Config object at 0x00000201334E2CD0>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.mark' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\mark\\__init__.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.main' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\main.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.runner' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\runner.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.fixtures' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\fixtures.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.helpconfig' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\helpconfig.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.python' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\python.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.terminal' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\terminal.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.debugging' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\debugging.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.unittest' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\unittest.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.capture' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\capture.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.skipping' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\skipping.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.tmpdir' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\tmpdir.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.monkeypatch' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\monkeypatch.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.recwarn' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\recwarn.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.pastebin' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\pastebin.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.nose' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\nose.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.assertion' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\assertion\\__init__.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.junitxml' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\junitxml.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.resultlog' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\resultlog.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.doctest' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\doctest.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.cacheprovider' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\cacheprovider.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.freeze_support' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\freeze_support.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.setuponly' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\setuponly.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.setupplan' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\setupplan.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.stepwise' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\stepwise.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.warnings' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\warnings.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.logging' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\logging.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.reports' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\reports.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module '_pytest.faulthandler' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\_pytest\\faulthandler.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module 'anyio.pytest_plugin' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\anyio\\pytest_plugin.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module 'pytest_arraydiff.plugin' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\pytest_arraydiff\\plugin.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module 'pytest_doctestplus.plugin' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\pytest_doctestplus\\plugin.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module 'pytest_openfiles.plugin' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\pytest_openfiles\\plugin.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module 'pytest_remotedata.plugin' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\pytest_remotedata\\plugin.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <module 'typeguard.pytest_plugin' from 'c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\typeguard\\pytest_plugin.py'>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <CaptureManager _method='fd' _global_capturing=<MultiCapture out=<FDCapture 1 oldfd=8 _state='suspended'> err=<FDCapture 2 oldfd=9 _state='suspended'> in_=<FDCapture 0 oldfd=6 _state='started'> _state='suspended' _in_suspended='<UNSET>'> _current_item=None>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <Session 2022-assignment-sklearn exitstatus=<ExitCode.OK: 0> testsfailed=0 testscollected=0>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.cacheprovider.LFPlugin object at 0x00000201506E5040>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.cacheprovider.NFPlugin object at 0x00000201506D0FD0>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.stepwise.StepwisePlugin object at 0x00000201506C7730>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.terminal.TerminalReporter object at 0x0000020150669CA0>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.logging.LoggingPlugin object at 0x00000201506F64F0>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          plugin: <_pytest.fixtures.FixtureManager object at 0x00000201506F6B80>
+          manager: <_pytest.config.PytestPluginManager object at 0x0000020133453700>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_report_header [hook]
+          config: <_pytest.config.Config object at 0x00000201334E2CD0>
+          startdir: C:\Users\Dell\PycharmProjects\Desktop\M2DS\DataCamp\2022-assignment-sklearn
+      finish pytest_report_header --> [['rootdir: C:\\Users\\Dell\\PycharmProjects\\Desktop\\M2DS\\DataCamp\\2022-assignment-sklearn', 'plugins: anyio-3.6.1, arraydiff-0.3, doctestplus-0.4.0, openfiles-0.4.0, remotedata-0.3.2, typeguard-2.13.3'], ['using: pytest-5.2.1 pylib-1.10.0', 'setuptools registered plugins:', '  anyio-3.6.1 at c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\anyio\\pytest_plugin.py', '  pytest-arraydiff-0.3 at c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\pytest_arraydiff\\plugin.py', '  pytest-doctestplus-0.4.0 at c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\pytest_doctestplus\\plugin.py', '  pytest-openfiles-0.4.0 at c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\pytest_openfiles\\plugin.py', '  pytest-remotedata-0.3.2 at c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\pytest_remotedata\\plugin.py', '  typeguard-2.13.3 at c:\\users\\dell\\appdata\\local\\programs\\python\\python38\\lib\\site-packages\\typeguard\\pytest_plugin.py']] [hook]
+    finish pytest_sessionstart --> [] [hook]
+    pytest_collection [hook]
+        session: <Session 2022-assignment-sklearn exitstatus=<ExitCode.OK: 0> testsfailed=0 testscollected=0>
+    perform_collect <Session 2022-assignment-sklearn exitstatus=<ExitCode.OK: 0> testsfailed=0 testscollected=0> ['.\\test_sklearn_questions.py', 'c:'] [collection]
+        pytest_collection_finish [hook]
+            session: <Session 2022-assignment-sklearn exitstatus=<ExitCode.OK: 0> testsfailed=0 testscollected=0>
+          pytest_report_collectionfinish [hook]
+              config: <_pytest.config.Config object at 0x00000201334E2CD0>
+              startdir: C:\Users\Dell\PycharmProjects\Desktop\M2DS\DataCamp\2022-assignment-sklearn
+              items: []
+          finish pytest_report_collectionfinish --> [] [hook]
+        finish pytest_collection_finish --> [] [hook]
+      pytest_sessionfinish [hook]
+          session: <Session 2022-assignment-sklearn exitstatus=<ExitCode.USAGE_ERROR: 4> testsfailed=0 testscollected=0>
+          exitstatus: ExitCode.USAGE_ERROR
+        pytest_terminal_summary [hook]
+            terminalreporter: <_pytest.terminal.TerminalReporter object at 0x0000020150669CA0>
+            exitstatus: ExitCode.USAGE_ERROR
+            config: <_pytest.config.Config object at 0x00000201334E2CD0>
+        finish pytest_terminal_summary --> [] [hook]
+      finish pytest_sessionfinish --> [] [hook]
+      pytest_unconfigure [hook]
+          config: <_pytest.config.Config object at 0x00000201334E2CD0>
+      finish pytest_unconfigure --> [] [hook]
