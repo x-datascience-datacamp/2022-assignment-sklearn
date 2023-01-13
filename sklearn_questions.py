@@ -178,7 +178,6 @@ class MonthlySplit(BaseCrossValidator):
         n_splits = len(splits) - 1
         return n_splits
 
-
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
 
