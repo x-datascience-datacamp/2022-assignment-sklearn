@@ -48,10 +48,10 @@ from sklearn.metrics.pairwise import pairwise_distances
 to compute distances between 2 sets of samples.
 """
 import numpy as np
-import pandas as pd
 
 from sklearn.base import BaseEstimator
 from sklearn.base import ClassifierMixin
+from sklearn.utils.multiclass import unique_labels
 
 from sklearn.model_selection import BaseCrossValidator
 
@@ -59,6 +59,7 @@ from sklearn.utils.validation import check_X_y, check_is_fitted
 from sklearn.utils.validation import check_array
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.metrics.pairwise import pairwise_distances
+from dateutil import relativedelta
 
 
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
@@ -82,12 +83,19 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
+        check_classification_targets(y)
+        X, y = check_X_y(X, y)
+
+        self.y_train_ = y
+        self.classes_ = unique_labels(y)
+        self.X_train_ = X
+        self.n_features_in_ = X.shape[1]
         return self
 
     def predict(self, X):
         """Predict function.
 
-        Parameters
+        Parameterss2
         ----------
         X : ndarray, shape (n_test_samples, n_features)
             Data to predict on.
@@ -97,8 +105,30 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
-        y_pred = np.zeros(X.shape[0])
-        return y_pred
+        check_is_fitted(self)
+        check_array(X)
+
+        listeDistance = pairwise_distances(self.X_train_, X)
+
+        solution = np.array([])
+        for ligne in listeDistance.T:
+            y_values = np.argsort(ligne)[:self.n_neighbors]
+            y_values = self.y_train_[y_values]
+            solution = np.append(solution, self.vote(y_values.tolist()))
+
+        return solution
+
+    def vote(self, listeVote):
+        """Fait le vote."""
+        counter = 0
+        num = listeVote[0]
+
+        for i in set(listeVote):
+            curr_frequency = listeVote.count(i)
+            if (curr_frequency > counter):
+                counter = curr_frequency
+                num = i
+        return num
 
     def score(self, X, y):
         """Calculate the score of the prediction.
@@ -115,7 +145,9 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        return 0.
+        y_pred = self.predict(X)
+        score = np.mean(y == y_pred)
+        return score
 
 
 class MonthlySplit(BaseCrossValidator):
@@ -155,7 +187,14 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        return 0
+        X = X.reset_index()
+        X = X.set_index(self.time_col)
+
+        if (X.index.inferred_type != "datetime64"):
+            raise ValueError("datetime")
+        relative = relativedelta.relativedelta(X.index.max(), X.index.min())
+        n_splits = abs(int(relative.months+relative.years*12))
+        return n_splits
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -177,12 +216,22 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-
-        n_samples = X.shape[0]
+        X = X.reset_index()
+        X = X.set_index(self.time_col)
         n_splits = self.get_n_splits(X, y, groups)
+        year = X.index.min().year
+        month = X.index.min().month
+
         for i in range(n_splits):
-            idx_train = range(n_samples)
-            idx_test = range(n_samples)
+            idx_train = np.where((X.index.year == year)
+                                 & (X.index.month == month))[0]
+            if month < 12:
+                month += 1
+            else:
+                year += 1
+                month = 1
+            idx_test = np.where((X.index.year == year)
+                                & (X.index.month == month))[0]
             yield (
                 idx_train, idx_test
             )
