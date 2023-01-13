@@ -116,7 +116,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         mask = sort_samples[:, : self.n_neighbors]
         classes = self.y_[mask]
 
-        y_pred = stats.mode(classes, keepdims=False, axis=1)[0].ravel()
+        y_pred = stats.mode(classes, axis=1)[0].ravel()
 
         return y_pred
 
@@ -153,8 +153,8 @@ class MonthlySplit(BaseCrossValidator):
         for which this column is not a datetime, it will raise a ValueError.
         To use the index as column just set `time_col` to `'index'`.
     """
-
-    def __init__(self, time_col='index'):  # noqa: D107
+    
+    def __init__(self, time_col="index"):  # noqa: D107
         self.time_col = time_col
 
     def get_n_splits(self, X, y=None, groups=None):
@@ -175,7 +175,11 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        return 0
+        X = X.reset_index()
+        if not isinstance(X[self.time_col].iloc[0], pd.Timestamp):
+            raise ValueError("time_col must be a datetime column")
+
+        return X[self.time_col].dt.to_period("M").nunique() - 1
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -198,11 +202,12 @@ class MonthlySplit(BaseCrossValidator):
             The testing set indices for that split.
         """
 
-        n_samples = X.shape[0]
+        X.sort_index(inplace=True)
+        X = X.reset_index()
+        periods = X[self.time_col].dt.to_period("M").unique()
+
         n_splits = self.get_n_splits(X, y, groups)
         for i in range(n_splits):
-            idx_train = range(n_samples)
-            idx_test = range(n_samples)
-            yield (
-                idx_train, idx_test
-            )
+            idx_train = X.index[X[self.time_col].dt.to_period("M") == periods[i]]
+            idx_test = X.index[X[self.time_col].dt.to_period("M") == periods[i + 1]]
+            yield (idx_train, idx_test)
