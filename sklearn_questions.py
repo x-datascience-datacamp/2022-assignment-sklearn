@@ -173,7 +173,7 @@ class MonthlySplit(BaseCrossValidator):
             time_col = X[self.time_col]
         if not isinstance(time_col, pd.DatetimeIndex):
             raise ValueError(f"{self.time_col} is not a datetime column")
-        return (time_col.max() - time_col.min()).days // 30
+        return ((time_col.max() - time_col.min())/np.timedelta64(1, 'M')).astype('int')
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
