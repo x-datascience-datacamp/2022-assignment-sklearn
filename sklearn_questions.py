@@ -207,8 +207,8 @@ class MonthlySplit(BaseCrossValidator):
         for i in range(n_splits):
             idx_train = (
                 X.index[
-                    (X[self.time_col].dt.to_period('M') ==
-                    np.unique(X[self.time_col].dt.to_period('M'))[i])
+                    X[self.time_col].dt.to_period('M') ==
+                    np.unique(X[self.time_col].dt.to_period('M'))[i]
                 ].values
             )
             idx_test = (
