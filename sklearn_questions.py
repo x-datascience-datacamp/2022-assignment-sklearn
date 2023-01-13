@@ -66,6 +66,7 @@ from pandas.core.dtypes.common import is_datetime64_any_dtype
 
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
     """KNearestNeighbors classifier."""
+    
     def __init__(self, n_neighbors=1):  # noqa: D107
         self.n_neighbors = n_neighbors
 
