@@ -63,7 +63,7 @@ from sklearn.metrics.pairwise import pairwise_distances
 
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
     """KNearestNeighbors classifier."""
-    
+
     def __init__(self, n_neighbors=1):  # noqa: D107
         self.n_neighbors = n_neighbors
 
@@ -206,24 +206,16 @@ class MonthlySplit(BaseCrossValidator):
 
         for i in range(n_splits):
             idx_train = (
-                X.index[(
-                    X[self.time_col]
-                    .dt.to_period('M') ==
-                    np.unique((
-                        X[self.time_col]
-                        .dt.to_period('M'))[i]
-                    )
-                )].values
+                X.index[
+                    (X[self.time_col].dt.to_period('M') ==
+                    np.unique(X[self.time_col].dt.to_period('M'))[i])
+                ].values
             )
             idx_test = (
-                X.index[(
-                    X[self.time_col]
-                    .dt.to_period('M') ==
-                    np.unique((
-                        X[self.time_col]
-                        .dt.to_period('M'))[i+1]
-                    )
-                )].values
+                X.index[
+                    X[self.time_col].dt.to_period('M') ==
+                    np.unique(X[self.time_col].dt.to_period('M'))[i+1]
+                ].values
             )
             yield (
                 idx_train, idx_test
