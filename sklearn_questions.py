@@ -82,6 +82,9 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
+        self.X = X_train
+        self.y = y_train
+
         return self
 
     def predict(self, X):
@@ -97,7 +100,13 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
-        y_pred = np.zeros(X.shape[0])
+        dist = pairwise_distances(X, self.X_train)
+        nearest_neighbors = np.argsort(dist, axis=1)[:, :self.n_neighbors]
+        y_pred = self.y[nearest_neighbors]
+        f = lambda x : 1 if x>n_neighbors/2 else 0
+        for k in range(len(y_pred)):
+            y_pred[k] = f(y_pred[k])
+
         return y_pred
 
     def score(self, X, y):
@@ -115,7 +124,10 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        return 0.
+        y_pred = self.predict(X)
+        score = accuracy_score(y, y_pred)
+
+        return score
 
 
 class MonthlySplit(BaseCrossValidator):
@@ -155,7 +167,13 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        return 0
+        if self.time_col == 'index':
+            time_col = X.index
+        else:
+            time_col = X[self.time_col]
+        if not isinstance(time_col, pd.DatetimeIndex):
+            raise ValueError(f"{self.time_col} is not a datetime column")
+        return (time_col.max() - time_col.min()).days // 30
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
