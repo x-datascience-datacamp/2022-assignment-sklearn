@@ -125,7 +125,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         ----------
         X : ndarray, shape (n_samples, n_features)
             Data to score on.
-        y : ndarray, shape (n_samples,)
+        y : ndarray, shape (n_samples)
             target values.
 
         Returns
