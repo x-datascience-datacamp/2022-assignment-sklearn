@@ -83,7 +83,6 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier.
         """
-
         # Check that X and y have correct shape & dtypes
         X, y = check_X_y(X, y)
 
@@ -111,7 +110,6 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
-
         # Checks
         # Check if fit has been called
         check_is_fitted(self)
@@ -233,7 +231,7 @@ class MonthlySplit(BaseCrossValidator):
         return n_splits
 
     def _date_adder_helper(self, month, year):
-        """Adds a month to the given (month, year) pair.
+        """Add a month to the given (month, year) pair.
 
         Parameters
         ----------

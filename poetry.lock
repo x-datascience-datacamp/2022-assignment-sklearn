@@ -316,6 +316,24 @@ files = [
 ]
 
 [[package]]
+name = "pydocstyle"
+version = "6.2.3"
+description = "Python docstring style checker"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "pydocstyle-6.2.3-py3-none-any.whl", hash = "sha256:a04ed1e6fe0be0970eddbb1681a7ab59b11eb92729fdb4b9b24f0eb11a25629e"},
+    {file = "pydocstyle-6.2.3.tar.gz", hash = "sha256:d867acad25e48471f2ad8a40ef9813125e954ad675202245ca836cb6e28b2297"},
+]
+
+[package.dependencies]
+snowballstemmer = ">=2.2.0"
+
+[package.extras]
+toml = ["tomli (>=1.2.3)"]
+
+[[package]]
 name = "pyflakes"
 version = "3.0.1"
 description = "passive checker of Python programs"
@@ -473,6 +491,18 @@ files = [
 ]
 
 [[package]]
+name = "snowballstemmer"
+version = "2.2.0"
+description = "This package provides 29 stemmers for 28 languages generated from Snowball algorithms."
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "snowballstemmer-2.2.0-py2.py3-none-any.whl", hash = "sha256:c8e1716e83cc398ae16824e5572ae04e0d9fc2c6b985fb0f900f5f0c96ecba1a"},
+    {file = "snowballstemmer-2.2.0.tar.gz", hash = "sha256:09b16deb8547d3412ad7b590689584cd0fe25ec8db3be37788be3810cbf19cb1"},
+]
+
+[[package]]
 name = "threadpoolctl"
 version = "3.1.0"
 description = "threadpoolctl"
@@ -499,4 +529,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "df8aba1a18c85aff4d149441ac32f867b724aaeb5de7040217c2bba164c6b9d7"
+content-hash = "90e670391f4fde172f0f2a59d55d1d4c8c0eb927797c445ad5655dd1a9dd5937"
