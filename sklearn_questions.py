@@ -93,7 +93,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
     def predict(self, X):
         """Predict function.
 
-        Parameterss
+        Parameterss2
         ----------
         X : ndarray, shape (n_test_samples, n_features)
             Data to predict on.
