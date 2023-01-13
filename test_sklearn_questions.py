@@ -62,6 +62,7 @@ def test_time_split(end_date, expected_splits, shuffle_data):
     assert cv_repr == repr(cv)
 
     # Test if get_n_splits works correctly
+    print(cv.get_n_splits(X, y))
     assert cv.get_n_splits(X, y) == expected_splits
 
     # Test if the cross-validator works as expected even if
