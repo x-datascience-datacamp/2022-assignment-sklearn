@@ -48,7 +48,6 @@ from sklearn.metrics.pairwise import pairwise_distances
 to compute distances between 2 sets of samples.
 """
 import numpy as np
-import pandas as pd
 from scipy import stats
 from sklearn.base import BaseEstimator
 from sklearn.base import ClassifierMixin
@@ -60,6 +59,7 @@ from sklearn.utils.validation import check_array
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.utils.multiclass import unique_labels
+
 
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
     """KNearestNeighbors classifier."""
@@ -105,7 +105,6 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         """
         check_is_fitted(self)
         X = check_array(X)
-        
         distances = pairwise_distances(X, self.X_train_)
         n_neighbors = self.n_neighbors
         index = np.argsort(distances, axis=1)[:, :n_neighbors]
@@ -132,10 +131,6 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         check_is_fitted(self)
         X = check_array(X)
         return np.sum(self.predict(X) == y)/len(y)
-
-
-
-
 
 
 class MonthlySplit(BaseCrossValidator):
@@ -204,7 +199,6 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-
         n_splits = self.get_n_splits(X, y, groups)
         X = X.reset_index()
         X.set_index(self.time_col)
