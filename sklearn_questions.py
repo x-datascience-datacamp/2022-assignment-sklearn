@@ -89,7 +89,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self.y_train_ = y
         self.classes_ = unique_labels(y)
         self.X_train_ = X
-        self.n_features_in_=X.shape[1]
+        self.n_features_in_ = X.shape[1]
         return self
 
     def predict(self, X):
@@ -235,6 +235,3 @@ class MonthlySplit(BaseCrossValidator):
             yield (
                 idx_train, idx_test
             )
-
-from sklearn.utils.estimator_checks import check_estimator
-
