@@ -48,7 +48,6 @@ from sklearn.metrics.pairwise import pairwise_distances
 to compute distances between 2 sets of samples.
 """
 import numpy as np
-import pandas as pd
 
 from sklearn.base import BaseEstimator
 from sklearn.base import ClassifierMixin
@@ -85,8 +84,10 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         # check if X and y are arrays
         X, y = check_X_y(X, y)
         check_classification_targets(y)
-        self.Xtrain = X
-        self.Ytrain = y
+        self.classes_ = np.unique(y)
+        self.n_features_in_ = X.shape[1]
+        self.Xtrain_ = X
+        self.Ytrain_ = y
         return self
 
     def predict(self, X):
@@ -107,11 +108,11 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         # Check if fit has been called
         check_is_fitted(self)
         # Rest of the code
-        y_pred = np.zeros(X.shape[0])
-        D = pairwise_distances(self.Xtrain, X)
+        y_pred = np.zeros(X.shape[0], dtype=self.classes_.dtype)
+        D = pairwise_distances(self.Xtrain_, X)
         for i in range(len(y_pred)):
             indx = np.argsort(D[:, i])[0:self.n_neighbors]
-            y_closest = list(self.Ytrain[list(indx)])
+            y_closest = list(self.Ytrain_[list(indx)])
             y_pred[i] = max(set(y_closest), key=y_closest.count)
         return y_pred
 
@@ -153,6 +154,7 @@ class MonthlySplit(BaseCrossValidator):
         for which this column is not a datetime, it will raise a ValueError.
         To use the index as column just set `time_col` to `'index'`.
     """
+    
     def __init__(self, time_col='index'):  # noqa: D107
         self.time_col = time_col
 
@@ -174,14 +176,15 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        if self.time_col == 'index':
-            dates = pd.Series(X.index)
+        X = X.reset_index()
+        dates = X[self.time_col]
+        if dates.dtype == "datetime64[ns]":
+            dates = dates.sort_values().dt.to_period("M")
+            self.alldates = dates
+            self.dates = np.sort(dates.unique())
+            return len(self.dates)-1
         else:
-            dates = pd.Series(X[self.time_col])
-        dates = dates.to_period("M")
-        self.alldates = list(dates)
-        self.dates = list(dates.unique())
-        return dates.nunique()-1
+            raise ValueError("wrong type, datetime aasba")
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -204,12 +207,11 @@ class MonthlySplit(BaseCrossValidator):
             The testing set indices for that split.
         """
         n_splits = self.get_n_splits(X, y, groups)
+        ldates = self.alldates
+        dt = self.dates
         for i in range(n_splits):
-            j = i+1
-            ldates = self.alldates
-            dt = self.dates
-            idx_train = range(ldates.index(dt[i]), ldates.index(dt[i+1])-1)
-            idx_test = range(ldates.index(dt[j]), ldates.index(dt[j+1])-1)
+            idx_train = np.array((ldates[ldates == dt[i]]).index)
+            idx_test = np.array((ldates[ldates == dt[i+1]]).index)
             yield (
                 idx_train, idx_test
             )
