@@ -48,8 +48,6 @@ from sklearn.metrics.pairwise import pairwise_distances
 to compute distances between 2 sets of samples.
 """
 import numpy as np
-import pandas as pd
-
 from sklearn.base import BaseEstimator
 from sklearn.base import ClassifierMixin
 from scipy import stats
@@ -87,7 +85,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self.classes_ = np.unique(self.y_)
         check_classification_targets(self.y_)
         self.n_features_in_ = self.X_.shape[1]
-        
+
         return self
 
     def predict(self, X):
@@ -107,17 +105,16 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         check_is_fitted(self)
         X = check_array(X)
 
-        dist = pairwise_distances(X,Y=self.X_)
+        dist = pairwise_distances(X, Y=self.X_)
 
-        idx_sort = np.argsort(dist,axis=1)
-        idx_neighbors = idx_sort[:,:self.n_neighbors]
+        idx_sort = np.argsort(dist, axis=1)
+        idx_neighbors = idx_sort[:, :self.n_neighbors]
 
         Y_neighbors = self.y_[idx_neighbors]
 
-        mode, count = stats.mode(Y_neighbors, axis =1, keepdims = False)
+        mode, count = stats.mode(Y_neighbors, axis=1, keepdims=False)
 
         y_pred = np.asarray(mode.reshape(-1))
-
 
         return y_pred
 
@@ -178,17 +175,15 @@ class MonthlySplit(BaseCrossValidator):
         """
 
         X = X.reset_index()
-        
+
         if X[self.time_col].dtype != 'datetime64[ns]':
             raise ValueError('must be a datetime')
 
         X = X.set_index(self.time_col)
         splits = np.unique(X.index.to_period('M'))
         n_splits = len(splits) - 1
-        
-        
-        return n_splits
 
+        return n_splits
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -211,17 +206,16 @@ class MonthlySplit(BaseCrossValidator):
             The testing set indices for that split.
         """
 
-        n_samples = X.shape[0]
-        
         n_splits = self.get_n_splits(X, y, groups)
         X = X.reset_index()
         X.set_index(self.time_col)
-        
+        X_ = X[self.time_col]
+
         for i in range(n_splits):
-            idx_train = X.index[X[self.time_col].dt.to_period('M') == np.unique(X[self.time_col].dt.to_period('M'))[i]].values
-            idx_test = X.index[X[self.time_col].dt.to_period('M') == np.unique(X[self.time_col].dt.to_period('M'))[i+1]].values
+            idx_train = X.index[X_.dt.to_period('M') ==
+                                np.unique(X_.dt.to_period('M'))[i]].values
+            idx_test = X.index[X_.dt.to_period('M') ==
+                               np.unique(X_.dt.to_period('M'))[i+1]].values
             yield (
                 idx_train, idx_test
             )
-
-        
