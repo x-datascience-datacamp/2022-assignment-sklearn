@@ -49,6 +49,7 @@ to compute distances between 2 sets of samples.
 """
 import numpy as np
 import pandas as pd
+import scipy.stats as stats
 
 from sklearn.base import BaseEstimator
 from sklearn.base import ClassifierMixin
@@ -82,6 +83,9 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
+        self.X_, self.y_ = check_X_y(X,y)
+        check_classification_targets(self.y_)
+        self.n_features_in_ = self.X.shape[1]
         return self
 
     def predict(self, X):
@@ -97,7 +101,12 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
-        y_pred = np.zeros(X.shape[0])
+        check_is_fitted(self)
+        X = check_array(X)
+        distances = pairwise_distances(self.X_, X)
+        indices = np.argpartition(distances, kth=self.n_neighbors,axis=0)[:self.n_neighbors, :]
+        y_pred = self.y_[indices]
+        y_pred = stats.mode(y_pred, axis=0)[0].squeeze()
         return y_pred
 
     def score(self, X, y):
@@ -115,7 +124,8 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        return 0.
+        score = np.mean(self.predict(X) == y)
+        return score
 
 
 class MonthlySplit(BaseCrossValidator):
@@ -155,7 +165,9 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        return 0
+        X = X.reset_index()
+        n_splits = X[self.time_col].dt.to_period('M').nunique()-1
+        return n_splits
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -178,11 +190,13 @@ class MonthlySplit(BaseCrossValidator):
             The testing set indices for that split.
         """
 
-        n_samples = X.shape[0]
-        n_splits = self.get_n_splits(X, y, groups)
+        n_splits = self.get_n_splits(X, y)
+        X.sort_index(inplace=True)
+        X = X.reset_index()
         for i in range(n_splits):
-            idx_train = range(n_samples)
-            idx_test = range(n_samples)
-            yield (
-                idx_train, idx_test
-            )
+            train_idx = X.index[X[self.time_col].dt.to_period('M') ==
+                                X[self.time_col].dt.to_period('M').unique()[i]]
+            test_idx = X.index[X[self.time_col].dt.to_period('M') ==
+                               X[self.time_col].dt.to_period('M')
+                               .unique()[i+1]]
+            yield train_idx, test_idx
