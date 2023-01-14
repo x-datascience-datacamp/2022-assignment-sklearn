@@ -59,6 +59,7 @@ from sklearn.utils.validation import check_X_y, check_is_fitted
 from sklearn.utils.validation import check_array
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.metrics.pairwise import pairwise_distances
+from sklearn.utils.multiclass import unique_labels
 
 
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
@@ -82,6 +83,16 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
+        # Check that X and y have correct shape
+        X, y = check_X_y(X, y)
+        # Classification target check
+        check_classification_targets(y)
+        # Store the classes seen during fit
+        self.classes_ = unique_labels(y)
+
+        self.X_ = X
+        self.y_ = y
+
         return self
 
     def predict(self, X):
@@ -97,8 +108,30 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
-        y_pred = np.zeros(X.shape[0])
-        return y_pred
+        # Check if fit has been called
+        check_is_fitted(self)
+
+        # Input validation
+        X = check_array(X)
+
+        # Predict the k-nearest neighbors
+        y_pred = []
+        distance_matrix = pairwise_distances(X, self.X_)
+
+        # Loop on all the samples in the X dataset
+        for i in range(X.shape[0]):
+
+            # Get the k-nearest neighbors of the sample
+            neighbors_indices = np.argsort(distance_matrix[i, :]
+                                           )[:self.n_neighbors]
+
+            # Get the class that is the most among the neighbors
+            values, counts = np.unique(self.y_[neighbors_indices],
+                                       return_counts=True)
+            ind = np.argmax(counts)
+            y_pred.append(values[ind])
+
+        return np.array(y_pred)
 
     def score(self, X, y):
         """Calculate the score of the prediction.
@@ -115,7 +148,8 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        return 0.
+        acc = np.mean(self.predict(X) == y)
+        return acc
 
 
 class MonthlySplit(BaseCrossValidator):
@@ -155,7 +189,14 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        return 0
+        # Set the index to time_col
+        if self.time_col != 'index':
+            X = X.set_index(self.time_col)
+
+        # Get the number of splits with a monthly resampling
+        splits = len(X.resample("M")) - 1
+
+        return splits
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -177,12 +218,22 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-
-        n_samples = X.shape[0]
+        # Initialisations
         n_splits = self.get_n_splits(X, y, groups)
+
+        X = pd.DataFrame(X)
+        X = X.reset_index()
+
+        # Monthly frequency resampling =>
+        # get the dates of the samples for each month
+        X_monthly = X.resample("M",
+                               on=self.time_col)
+        idx_monthly = X_monthly.apply(lambda tab: tab.index)
+
+        # Get the splits
         for i in range(n_splits):
-            idx_train = range(n_samples)
-            idx_test = range(n_samples)
+            idx_train = idx_monthly.iloc[i].values
+            idx_test = idx_monthly.iloc[i+1].values
             yield (
                 idx_train, idx_test
             )
