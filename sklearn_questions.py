@@ -113,18 +113,15 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         X = check_array(X)
 
         # calculate the distance with all the training samples
-        distances = pairwise_distances(self.X_, X)
+        distances = pairwise_distances(X, self.X_)
 
         # find (the indexes of) the k-nearest
-        nearest_indexes = np.argsort(distances, axis=0)
-        k_nearest_indexes = nearest_indexes[:self.n_neighbors, :]
-
+        nearest_indexes = np.argsort(distances)
+        k_nearest_indexes = nearest_indexes[:, :self.n_neighbors]
         # most seen labels
-        y_pred = []
-        for k_idx in k_nearest_indexes.T:
-            y_poss = self.y_[k_idx] # nearest_label
-            y_pred.append(np.unique(y_poss)[0])
-            
+        k_nearest_label = self.y_[k_nearest_indexes]
+        y_pred = stats.mode(k_nearest_label, axis=1)[0].squeeze()
+
         return y_pred
 
     def score(self, X, y):
