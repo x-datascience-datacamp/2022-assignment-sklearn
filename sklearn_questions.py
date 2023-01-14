@@ -82,6 +82,15 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
+        
+        # check if correct shape
+        X, y = check_X_y(X, y)
+        check_classification_targets(y)
+        
+        # For the fitting, we only store the training set
+        self.X_ = X
+        self.y_ = y
+        
         return self
 
     def predict(self, X):
@@ -97,7 +106,28 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
-        y_pred = np.zeros(X.shape[0])
+
+        # checks
+        check_is_fitted(self)
+
+        # Input validation
+        X = check_array(X)
+
+        # calculate the distance with all the training samples
+        distances = pairwise_distances(self.X_, X)
+
+        # find (the indexes of) the k-nearest
+        nearest_indexes = [
+            np.argpartition(distances[i,:], self.n_neighbors)[:self.n_neighbors] for i in range(X.shape[1])
+        ]
+
+        # nearest labels
+        nearest_labels = [
+            self.y_[nearest_indexes[i]] for i in range(len(nearest_indexes))
+        ]
+
+        # most seen labels
+        y_pred = np.unique(nearest_labels, axis=1)[:,0]
         return y_pred
 
     def score(self, X, y):
@@ -115,7 +145,19 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        return 0.
+        # checks
+        X, y = check_X_y(X, y)
+        check_classification_targets(y)
+        check_is_fitted(self)
+
+        y_pred = self.predict(y)
+        
+        score = 0
+        for i in range(len(y)):
+            if y[i] == y_pred[i]:
+                score += 1
+
+        return score/len(y)
 
 
 class MonthlySplit(BaseCrossValidator):
