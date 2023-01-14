@@ -188,7 +188,7 @@ class MonthlySplit(BaseCrossValidator):
         date = X.index[0]
         n = 0
         while (len(X.loc[(X.index.month == date.month) &
-                        (X.index.year == date.year)]) != 0):
+                         (X.index.year == date.year)]) != 0):
             n += 1
             date = date + pd.DateOffset(months=1)
         return n-1
