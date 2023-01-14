@@ -58,6 +58,7 @@ from sklearn.utils.validation import check_X_y, check_is_fitted
 from sklearn.utils.validation import check_array
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.metrics.pairwise import pairwise_distances
+from scipy import stats
 
 
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
@@ -82,10 +83,8 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
             The current instance of the classifier
         """
         X, y = check_X_y(X, y)
-        X = check_array(X)
-        self.classes_ = np.unique(y)
-        check_classification_targets(self.classes_)
-        
+        check_classification_targets(y)
+        self.classes_ = unique_labels(y)
         self.X_ = X
         self.y_ = y
         self.n_samples_, self.n_features_in_ = X.shape
@@ -109,12 +108,9 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         X = check_array(X)
 
         matrix_distance = pairwise_distances(X, self.X_, metric='euclidean')
-        y_pred = np.zeros(X.shape[0], dtype=self.y_.dtype)
-
-        min_dist = np.argmin(matrix_distance, axis=1)
-        y_pred = self.y_[min_dist]
-
-        return y_pred
+        indices = np.argsort(matrix_distance)[:, :self.n_neighbors]
+        y_pred = self.y_[indices]
+        return stats.mode(y_pred, axis=1)[0].squeeze()
 
     def score(self, X, y):
         """Calculate the score of the prediction.
@@ -177,7 +173,7 @@ class MonthlySplit(BaseCrossValidator):
         col_time = X[self.time_col]
 
         if not isinstance(col_time[0], pd.Timestamp):
-            raise ValueError("Not a good format")
+            raise ValueError("Not a good format, need datetime")
 
         n_split = col_time.dt.to_period("M").nunique() - 1
         return n_split
@@ -204,7 +200,8 @@ class MonthlySplit(BaseCrossValidator):
         """
         X = X.reset_index()
         n_splits = self.get_n_splits(X, y, groups)
-        index_m = X.resample('M', on=self.time_col).apply(lambda array: array.index)
+        index_m = X.resample('M', on=self.time_col)\
+            .apply(lambda array: array.index)
         for i in range(n_splits):
             idx_train = index_m.iloc[i]
             idx_test = index_m.iloc[i+1]
