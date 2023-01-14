@@ -82,15 +82,15 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
-        
-        # check if correct shape
-        X, y = check_X_y(X, y)
+        X, y = check_X_y(X, y) # check if correct shape
         check_classification_targets(y)
-        
+
         # For the fitting, we only store the training set
         self.X_ = X
         self.y_ = y
-        
+        self.classes_ = np.unique(y)
+        self.n_features_ = X.shape[1]
+
         return self
 
     def predict(self, X):
@@ -106,7 +106,6 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
-
         # checks
         check_is_fitted(self)
 
@@ -117,17 +116,15 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         distances = pairwise_distances(self.X_, X)
 
         # find (the indexes of) the k-nearest
-        nearest_indexes = [
-            np.argpartition(distances[i,:], self.n_neighbors)[:self.n_neighbors] for i in range(X.shape[1])
-        ]
-
-        # nearest labels
-        nearest_labels = [
-            self.y_[nearest_indexes[i]] for i in range(len(nearest_indexes))
-        ]
+        nearest_indexes = np.argsort(distances, axis=0)
+        k_nearest_indexes = nearest_indexes[:self.n_neighbors, :]
 
         # most seen labels
-        y_pred = np.unique(nearest_labels, axis=1)[:,0]
+        y_pred = []
+        for k_idx in k_nearest_indexes.T:
+            y_poss = self.y_[k_idx] # nearest_label
+            y_pred.append(np.unique(y_poss)[0])
+            
         return y_pred
 
     def score(self, X, y):
