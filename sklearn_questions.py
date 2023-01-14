@@ -180,7 +180,7 @@ class MonthlySplit(BaseCrossValidator):
 
         n_samples = X.shape[0]
         n_splits = self.get_n_splits(X, y, groups)
-        for i in range(n_splits):
+        for j in range(n_splits):
             idx_train = range(n_samples)
             idx_test = range(n_samples)
             yield (
