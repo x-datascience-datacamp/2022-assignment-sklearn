@@ -86,6 +86,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         X, y = check_X_y(X, y)
         self.classes_ = np.unique(y)
         check_classification_targets(y)
+        self.n_features_in_ = X.shape[1]
         self.X_ = X
         self.y_ = y
         return self
@@ -137,6 +138,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         # y=check_array(y,ensure_2d=False,dtype=None)
         X, y = check_X_y(X, y)
         y_pred = self.predict(X)
+        check_classification_targets(y_pred)
         s = np.sum(y_pred == y) / len(y)
         return s
 
@@ -181,11 +183,11 @@ class MonthlySplit(BaseCrossValidator):
         X.sort_index(inplace=True)
         X = X.reset_index()
         if X[self.time_col].dtypes != 'datetime64[ns]':
-            raise ValueError("Error")
+            raise ValueError("datetime")
         X = X.set_index(self.time_col)
         date = X.index[0]
         n = 0
-        while(len(X.loc[(X.index.month == date.month) &
+        while (len(X.loc[(X.index.month == date.month) &
                         (X.index.year == date.year)]) != 0):
             n += 1
             date = date + pd.DateOffset(months=1)
@@ -212,20 +214,23 @@ class MonthlySplit(BaseCrossValidator):
             The testing set indices for that split.
         """
         # n_samples = X.shape[0]
-        X.sort_index(inplace=True)
         n_splits = self.get_n_splits(X, y, groups)
+        X.sort_index(inplace=True)
+        y.sort_index(inplace=True)
         T = X.copy()
-        X = X.reset_index()
-        X = X.set_index(self.time_col)
-        date = X.index[0]
+        K = X.copy()
+        K = K.reset_index()
+        K = K.set_index(self.time_col)
+        T = T.reset_index()
+        date = K.index[0]
         for i in range(n_splits):
-            current_month_data = T.loc[(X.index.month == date.month) &
-                                       (X.index.year == date.year)]
+            current_month_data = T.loc[(K.index.month == date.month) &
+                                       (K.index.year == date.year)]
             date = date + pd.DateOffset(months=1)
-            next_month_data = T.loc[(X.index.month == date.month) &
-                                    (X.index.year == date.year)]
+            next_month_data = T.loc[(K.index.month == date.month) &
+                                    (K.index.year == date.year)]
             idx_train = current_month_data.index
             idx_test = next_month_data.index
             yield (
-                idx_train, idx_test
+                np.array(idx_train), np.array(idx_test)
             )
