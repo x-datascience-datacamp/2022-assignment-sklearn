@@ -190,11 +190,13 @@ class MonthlySplit(BaseCrossValidator):
             The testing set indices for that split.
         """
 
-        n_samples = X.shape[0]
-        n_splits = self.get_n_splits(X, y, groups)
+        n_splits = self.get_n_splits(X, y)
+        X.sort_index(inplace=True)
+        X = X.reset_index()
         for i in range(n_splits):
-            idx_train = range(n_samples)
-            idx_test = range(n_samples)
-            yield (
-                idx_train, idx_test
-            )
+            train_idx = X.index[X[self.time_col].dt.to_period('M') ==
+                                X[self.time_col].dt.to_period('M').unique()[i]]
+            test_idx = X.index[X[self.time_col].dt.to_period('M') ==
+                               X[self.time_col].dt.to_period('M')
+                               .unique()[i+1]]
+            yield train_idx, test_idx
