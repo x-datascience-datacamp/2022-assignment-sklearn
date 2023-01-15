@@ -59,6 +59,7 @@ from sklearn.utils.validation import check_X_y, check_is_fitted
 from sklearn.utils.validation import check_array
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.metrics.pairwise import pairwise_distances
+from dateutil.relativedelta import relativedelta
 
 
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
@@ -170,7 +171,13 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        return 0
+        if self.time_col != 'index' : 
+            X = X.set_index(self.time_col)
+
+        if type(X.index) != pd.core.indexes.datetimes.DatetimeIndex :
+            raise ValueError('not a datetime')
+        
+        return X.resample('M').count().shape[0] - 1 
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -192,10 +199,14 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-
-        n_samples = X.shape[0]
         n_splits = self.get_n_splits(X, y, groups)
+        
+        if self.time_col != 'index' : 
+            X = X.set_index(self.time_col)
+
         for i in range(n_splits):
-            idx_train = range(n_samples)
-            idx_test = range(n_samples)
+            curr_month = X.index.min() + relativedelta(months=i)
+            nxt_month = curr_month + relativedelta(months=1)
+            idx_curr, idx_nxt = X[(X.index.month == curr_month.month) & (X.index.year == curr_month.year)].index, X[(X.index.month == nxt_month.month) & (X.index.year == nxt_month.year)].index
+            idx_train, idx_test = [X.index.get_loc(i) for i in idx_curr], [X.index.get_loc(i) for i in idx_nxt]
             yield (idx_train, idx_test)
