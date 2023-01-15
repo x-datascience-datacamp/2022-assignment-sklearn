@@ -138,10 +138,12 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
 
 
 def sort_dates(dates):
+    """ sort sequence in 'YYYY-MM' format """
     return sorted(dates, key=lambda x: (x[0:4], x[5:]))
 
 
 class MonthlySplit(BaseCrossValidator):
+
     """CrossValidator based on monthly split.
     Split data based on the given `time_col` (or default to index). Each split
     corresponds to one month of data for the training and the next month of
@@ -154,7 +156,6 @@ class MonthlySplit(BaseCrossValidator):
         for which this column is not a datetime, it will raise a ValueError.
         To use the index as column just set `time_col` to `'index'`.
     """
-
     def __init__(self, time_col='index'):  # noqa: D107
         self.time_col = time_col
 
@@ -203,7 +204,6 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-
         n_samples = X.shape[0]
         n_splits = self.get_n_splits(X, y, groups)
         if self.time_col != 'index':
