@@ -1,12 +1,10 @@
+
 """Assignment - making a sklearn estimator and cv splitter.
-
 The goal of this assignment is to implement by yourself:
-
 - a scikit-learn estimator for the KNearestNeighbors for classification
   tasks and check that it is working properly.
 - a scikit-learn CV splitter where the splits are based on a Pandas
   DateTimeIndex.
-
 Detailed instructions for question 1:
 The nearest neighbor classifier predicts for a point X_i the target y_k of
 the training sample X_k which is the closest to X_i. We measure proximity with
@@ -20,8 +18,6 @@ scikit-learn estimator needs to check that the input given to `fit` and
 You can find more information on how they should be used in the following doc:
 https://scikit-learn.org/stable/developers/develop.html#rolling-your-own-estimator.
 Make sure to use them to pass `test_nearest_neighbor_check_estimator`.
-
-
 Detailed instructions for question 2:
 The data to split should contain the index or one column in
 datatime format. Then the aim is to split the data between train and test
@@ -30,37 +26,32 @@ predict of the following. For example if you have data distributed from
 november 2020 to march 2021, you have have 4 splits. The first split
 will allow to learn on november data and predict on december data, the
 second split to learn december and predict on january etc.
-
 We also ask you to respect the pep8 convention: https://pep8.org. This will be
 enforced with `flake8`. You can check that there is no flake8 errors by
 calling `flake8` at the root of the repo.
-
 Finally, you need to write docstrings for the methods you code and for the
 class. The docstring will be checked using `pydocstyle` that you can also
 call at the root of the repo.
-
 Hints
 -----
 - You can use the function:
-
 from sklearn.metrics.pairwise import pairwise_distances
-
 to compute distances between 2 sets of samples.
 """
 import numpy as np
-import pandas as pd
 
 from sklearn.base import BaseEstimator
 from sklearn.base import ClassifierMixin
 
 from sklearn.model_selection import BaseCrossValidator
-
+from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_X_y, check_is_fitted
 from sklearn.utils.validation import check_array
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.metrics.pairwise import pairwise_distances
-from pandas.core.dtypes.common import is_datetime64_any_dtype
+
 import scipy.stats as stats
+
 
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
     """KNearestNeighbors classifier."""
@@ -83,10 +74,8 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
-        # Check that X and y have correct shape
-        self.X_, self.y_ = check_X_y(X, y)
-        # Store the classes seen during fit
-        self.classes_ = np.unique(self.y_)
+        self.X_ , self.y_ = check_X_y(X, y)
+        self.classes_ = unique_labels(self.y_)
         check_classification_targets(self.y_)
         return self
 
@@ -103,13 +92,12 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
-        X = check_array(X)
         check_is_fitted(self)
-        distance = pairwise_distances(X,self.X_)
-        n_closest = np.argpartition(distance, self.n_neighbors, axis=1)[:,:self.n_neighbors]
-        y_pred = stats.mode(self.y_[n_closest], axis=1)[0].ravel()      
+        X = check_array(X)
+        distance = pairwise_distances(X, self.X_)
+        nearest_arg = np.argpartition(distance, self.n_neighbors, axis=1)[:, :self.n_neighbors]
+        y_pred = stats.mode(self.y_[nearest_arg], axis=1)[0].ravel()
         return y_pred
-
 
     def score(self, X, y):
         """Calculate the score of the prediction.
@@ -126,21 +114,15 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        sc = 0
         y_pred = self.predict(X)
-        for i in range(X.shape[0]):
-            if y_pred[i]==y[i]:
-                sc+=1
-        return sc/X.shape[0]
+        return (y_pred == y).mean()
 
 
 class MonthlySplit(BaseCrossValidator):
     """CrossValidator based on monthly split.
-
     Split data based on the given `time_col` (or default to index). Each split
     corresponds to one month of data for the training and the next month of
     data for the test.
-
     Parameters
     ----------
     time_col : str, defaults to 'index'
@@ -155,7 +137,6 @@ class MonthlySplit(BaseCrossValidator):
 
     def get_n_splits(self, X, y=None, groups=None):
         """Return the number of splitting iterations in the cross-validator.
-
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
@@ -165,27 +146,20 @@ class MonthlySplit(BaseCrossValidator):
             Always ignored, exists for compatibility.
         groups : array-like of shape (n_samples,)
             Always ignored, exists for compatibility.
-
         Returns
         -------
         n_splits : int
             The number of splits.
         """
-        if type(X) == pd.Series:
-            X = X.to_frame()
-
-        if type(X.index) != pd.RangeIndex:
-            X = X.reset_index()
-
-        if not is_datetime64_any_dtype(X[self.time_col]):
-            raise ValueError('datetime')
-
-        return len(X.resample('M', on=self.time_col)) - 1
-        
+        X = X.reset_index()
+        if not np.issubdtype(X[self.time_col].dtype, np.datetime64):
+            raise ValueError('Not type datetime.')       
+        months_period = X[self.time_col]
+        months_period = months_period.dt.to_period('M')
+        return months_period.nunique() - 1
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
-
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
@@ -195,7 +169,6 @@ class MonthlySplit(BaseCrossValidator):
             Always ignored, exists for compatibility.
         groups : array-like of shape (n_samples,)
             Always ignored, exists for compatibility.
-
         Yields
         ------
         idx_train : ndarray
@@ -203,15 +176,12 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-
-        n_samples = X.shape[0]
         n_splits = self.get_n_splits(X, y, groups)
         X = X.reset_index()
-        X = X.resample('M',on= self.time_col)
-        idx = X.index()
+        dates = X[self.time_col]
+        months_period = dates.dt.to_period('M')
+        months = np.sort(months_period.unique())
         for i in range(n_splits):
-            idx_train = idx[i]
-            idx_test = idx[i+1]
-            yield (
-                idx_train, idx_test
-            )
+            train_idx = X[months_period == months[i]].index.to_numpy()
+            test_idx = X[months_period == months[i + 1]].index.to_numpy()
+            yield train_idx, test_idx
