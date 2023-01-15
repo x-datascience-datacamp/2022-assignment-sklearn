@@ -97,7 +97,6 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
     def predict(self, X):
         """
         Predict function.
-
         Parameters
         ----------
         X : ndarray, shape (n_test_samples, n_features)
@@ -163,14 +162,12 @@ class MonthlySplit(BaseCrossValidator):
         To use the index as column just set `time_col` to `'index'`.
 
     """
-
     def __init__(self, time_col='index'):  # noqa: D107
         self.time_col = time_col
 
     def get_n_splits(self, X, y=None, groups=None):
         """
         Return the number of splitting iterations in the cross-validator.
-
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
@@ -187,7 +184,6 @@ class MonthlySplit(BaseCrossValidator):
             The number of splits.
 
         """
-
         X = X.reset_index()
         date = X[self.time_col]
         if not isinstance(X[self.time_col][0], pd.Timestamp):
@@ -199,6 +195,7 @@ class MonthlySplit(BaseCrossValidator):
         Generate indices to split data into training and test set.
         Parameters
         ----------
+
         X : array-like of shape (n_samples, n_features)
             Training data, where `n_samples` is the number of samples
             and `n_features` is the number of features.
@@ -215,7 +212,6 @@ class MonthlySplit(BaseCrossValidator):
             The testing set indices for that split.
 
         """
-
         n_splits = self.get_n_splits(X, y, groups)
         X = X.reset_index()
         date = X[self.time_col]
