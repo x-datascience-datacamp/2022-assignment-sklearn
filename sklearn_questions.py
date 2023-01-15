@@ -108,7 +108,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         for n in range(len(X)):
             dist = pairwise_distances(self.X_, X[:n])
             indices = np.argsort(dist)[: self.n_neighbors]
-            y_pred[n] = max(list(self.y_[indices]))
+            y_pred[n] = max(self.y_[indices])
         return y_pred
 
     def score(self, X, y):
@@ -177,7 +177,7 @@ class MonthlySplit(BaseCrossValidator):
             Training data, where `n_samples` is the number of samples
             and `n_features` is the number of features.
         y : array-like of shape (n_samples,)
-            Always ignored, exists for compatibility.
+            Always ignored, e xists for compatibility.
         groups : array-like of shape (n_samples,)
             Always ignored, exists for compatibility.
 
