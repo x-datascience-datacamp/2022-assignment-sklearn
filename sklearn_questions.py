@@ -108,7 +108,6 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
             Predicted class labels for each test data sample.
 
         """
-
         check_is_fitted(self)
 
         X = check_array(X)
@@ -139,7 +138,6 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
             Accuracy of the model computed for the (X, y) pairs.
 
         """
-
         y_pred = self.predict(X)
         score = np.mean(y_pred == y)
         return score
@@ -162,6 +160,7 @@ class MonthlySplit(BaseCrossValidator):
         To use the index as column just set `time_col` to `'index'`.
 
     """
+
     def __init__(self, time_col='index'):  # noqa: D107
         self.time_col = time_col
 
@@ -196,7 +195,6 @@ class MonthlySplit(BaseCrossValidator):
 
         Parameters
         ----------
-
         X : array-like of shape (n_samples, n_features)
             Training data, where `n_samples` is the number of samples
             and `n_features` is the number of features.
