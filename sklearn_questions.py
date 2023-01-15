@@ -103,11 +103,15 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         """
         check_is_fitted(self)
         X = check_array(X)
-        distance = pairwise_distances(X, self.X_)
-        n_closest = np.argpartition(distance,
-                                    self.n_neighbors,
-                                    axis=1)[:, :self.n_neighbors]
-        y_pred = stats.mode(self.y_[n_closest], axis=1)[0].ravel()
+        # distance = pairwise_distances(X, self.X_)
+        # n_closest = np.argpartition(distance,
+        #                             self.n_neighbors,
+        #                             axis=1)[:, :self.n_neighbors]
+        # y_pred = stats.mode(self.y_[n_closest], axis=1)[0].ravel()
+        dist = pairwise_distances(X, self.X_)
+        knn_val = self.y_[np.argsort(dist)[:, : self.n_neighbors]]
+        y_pred = stats.mode(knn_val, axis=1)[0].flatten()
+        y_pred = np.array(y_pred)
         return y_pred
 
     def score(self, X, y):
