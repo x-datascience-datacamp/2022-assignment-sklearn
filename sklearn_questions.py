@@ -81,12 +81,9 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
             The current instance of the classifier
         """
         X = check_array(X)
-        # Check that X and y have correct shape
         X, y = check_X_y(X, y)
-        # Store the classes seen during fit
-        # self.classes_ = unique_labels(y)
-        self.classes_ = np.unique(y)
         check_classification_targets(y)
+        self.classes_ = np.unique(y)
         self.X_ = X
         self.y_ = y
         return self
@@ -104,8 +101,8 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
-        X = check_array(X)
         check_is_fitted(self)
+        X = check_array(X)
         distance = pairwise_distances(X, self.X_)
         n_closest = np.argpartition(distance,
                                     self.n_neighbors,
@@ -128,6 +125,8 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
+        check_is_fitted(self)
+        X = check_array(X)
         sc = 0
         y_pred = self.predict(X)
         for i in range(X.shape[0]):
