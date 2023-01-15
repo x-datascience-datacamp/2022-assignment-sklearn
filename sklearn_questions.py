@@ -54,6 +54,7 @@ from sklearn.base import BaseEstimator
 from sklearn.base import ClassifierMixin
 
 from sklearn.model_selection import BaseCrossValidator
+from sklearn.utils.multiclass import unique_labels
 from collections import Counter
 
 from sklearn.utils.validation import check_X_y, check_is_fitted
@@ -86,8 +87,10 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         """
         X, y = check_X_y(X, y)
         check_classification_targets(y)
-        self.X_,self.y_ = X,y
+        self.X_ = X
+        self.y_ = y
         self.n_features_in_ = X.shape[1]
+        self.classes_ = unique_labels(y)
 
         return self
 
@@ -131,9 +134,8 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         """
         X, y = check_X_y(X, y)
         check_classification_targets(y)
-        y_pred = self.predict(X)
-        acc = sum(y == y_pred) / (len(y))
-        return acc
+        accuracy = sum(y == self.predict(X)) / (len(y))
+        return accuracy
 
 
 class MonthlySplit(BaseCrossValidator):
