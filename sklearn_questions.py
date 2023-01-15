@@ -57,8 +57,8 @@ from sklearn.model_selection import BaseCrossValidator
 
 from sklearn.utils.validation import check_X_y, check_is_fitted
 from sklearn.utils.validation import check_array
-from sklearn.utils.multiclass import (
-    check_classification_targets, unique_labels)
+from sklearn.utils.multiclass import check_classification_targets
+from sklearn.utils.multiclass import unique_labels
 from sklearn.metrics.pairwise import pairwise_distances
 from scipy import stats
 
@@ -109,7 +109,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         X = check_array(X)
         y_pred = np.zeros(X.shape[0])
         sorted_dist = np.argsort(pairwise_distances(X, self.X_))
-        closests_idx = sorted_dist[:, :self.n_neighbors]
+        closests_idx = sorted_dist[:, : self.n_neighbors]
         y_pred = self.y_[closests_idx]
         return stats.mode(y_pred, axis=1)[0].squeeze()
 
@@ -129,7 +129,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
             Accuracy of the model computed for the (X, y) pairs.
         """
         y_pred = self.predict(X)
-        acc = np.sum(y_pred == y)/y.shape[0]
+        acc = np.sum(y_pred == y) / y.shape[0]
         return acc
 
 
@@ -149,7 +149,7 @@ class MonthlySplit(BaseCrossValidator):
         To use the index as column just set `time_col` to `'index'`.
     """
 
-    def __init__(self, time_col='index'):  # noqa: D107
+    def __init__(self, time_col="index"):  # noqa: D107
         self.time_col = time_col
 
     def get_n_splits(self, X, y=None, groups=None):
@@ -173,7 +173,7 @@ class MonthlySplit(BaseCrossValidator):
         X = X.reset_index()
         if not isinstance(X[self.time_col].iloc[0], pd.Timestamp):
             raise ValueError("The passed column is not a datetime ")
-        months = X[self.time_col].dt.to_period('M')
+        months = X[self.time_col].dt.to_period("M")
         return len(np.unique(months)) - 1
 
     def split(self, X, y, groups=None):
@@ -198,9 +198,9 @@ class MonthlySplit(BaseCrossValidator):
         """
         n_splits = self.get_n_splits(X, y, groups)
         X = X.reset_index()
-        months = X[self.time_col].dt.to_period('M')
+        months = X[self.time_col].dt.to_period("M")
         months_sorted = np.sort(months.unique())
         for i in range(n_splits):
             idx_train = X[months == months_sorted[i]].index.to_list()
-            idx_test = X[months == months_sorted[i+1]].index.to_list()
+            idx_test = X[months == months_sorted[i + 1]].index.to_list()
             yield (idx_train, idx_test)
