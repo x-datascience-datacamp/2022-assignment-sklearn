@@ -138,12 +138,11 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
 
 
 def sort_dates(dates):
-    """ sort sequence in 'YYYY-MM' format """
+    """Sort sequence in 'YYYY-MM' format."""
     return sorted(dates, key=lambda x: (x[0:4], x[5:]))
 
 
 class MonthlySplit(BaseCrossValidator):
-
     """CrossValidator based on monthly split.
     Split data based on the given `time_col` (or default to index). Each split
     corresponds to one month of data for the training and the next month of
