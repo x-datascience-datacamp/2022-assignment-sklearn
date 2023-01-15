@@ -95,8 +95,8 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         check_is_fitted(self)
         X = check_array(X)
         distance = pairwise_distances(X, self.X_)
-        nearest_arg = np.argpartition(distance,
-                self.n_neighbors, axis=1)[:, :self.n_neighbors]
+        nearest_arg = np.argpartition(distance, self.n_neighbors,
+                                      axis=1)[:, :self.n_neighbors]
         y_pred = stats.mode(self.y_[nearest_arg], axis=1)[0].ravel()
         return y_pred
 
