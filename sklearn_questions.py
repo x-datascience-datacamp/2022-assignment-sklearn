@@ -87,8 +87,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         """
         X, y = check_X_y(X, y)
         check_classification_targets(y)
-        self.X_ = X
-        self.y_ = y
+        self.X_, self.y_ = X, y
         self.n_features_in_ = X.shape[1]
         self.classes_ = unique_labels(y)
 
@@ -215,10 +214,7 @@ class MonthlySplit(BaseCrossValidator):
 
         X_resampled = X.resample('M', on=self.time_col)
 
-        def index_array(array):
-            return array.index
-
-        idx_month = X_resampled.apply(index_array)
+        idx_month = X_resampled.index
 
         for i in range(n_splits):
             idx_train = idx_month.iloc[i]
