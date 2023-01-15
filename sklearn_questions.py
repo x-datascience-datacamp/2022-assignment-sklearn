@@ -141,11 +141,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
             Accuracy of the model computed for the (X, y) pairs.
         """
         y_pred = self.predict(X)
-
-        score = 0
-        for i in range(len(y)):
-            if y[i] == y_pred[i]:
-                score += 1
+        score = np.mean(y_pred == y)
 
         return score/len(y)
 
@@ -187,7 +183,14 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        return 0
+        X = X.reset_index()
+        
+        if not isinstance(X[self.time_col][0], pd.Timestamp):
+            raise ValueError("'time_col' collumn is not the type of datetime")
+
+        n_splits = X[self.time_col].dt.to_period('M') - 1
+
+        return n_splits
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
