@@ -140,7 +140,6 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
 
 class MonthlySplit(BaseCrossValidator):
     """CrossValidator based on monthly split.
-
     Split data based on the given `time_col` (or default to index). Each split
     corresponds to one month of data for the training and the next month of
     data for the test.
@@ -159,7 +158,6 @@ class MonthlySplit(BaseCrossValidator):
 
     def get_n_splits(self, X, y=None, groups=None):
         """Return the number of splitting iterations in the cross-validator.
-
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
