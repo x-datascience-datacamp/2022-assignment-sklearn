@@ -61,7 +61,6 @@ from sklearn.utils.validation import check_array
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.metrics.pairwise import pairwise_distances
 from collections import Counter
-from pandas.core.dtypes.common import is_datetime64_any_dtype
 
 
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
