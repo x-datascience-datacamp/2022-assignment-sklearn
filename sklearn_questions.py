@@ -60,6 +60,7 @@ from sklearn.utils.validation import check_array
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.metrics.pairwise import pairwise_distances
 
+from scipy import stats
 
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
     """KNearestNeighbors classifier."""
@@ -82,6 +83,15 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
+        X, y = check_X_y(X, y) # check if correct shape
+        check_classification_targets(y)
+
+        # For the fitting, we only store the training set
+        self.X_ = X
+        self.y_ = y
+        self.classes_ = np.unique(y)
+        self.n_features_ = X.shape[1]
+
         return self
 
     def predict(self, X):
@@ -97,7 +107,22 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
-        y_pred = np.zeros(X.shape[0])
+        # checks
+        check_is_fitted(self)
+
+        # Input validation
+        X = check_array(X)
+
+        # calculate the distance with all the training samples
+        distances = pairwise_distances(X, self.X_)
+
+        # find (the indexes of) the k-nearest
+        nearest_indexes = np.argsort(distances)
+        k_nearest_indexes = nearest_indexes[:, :self.n_neighbors]
+        # most seen labels
+        k_nearest_label = self.y_[k_nearest_indexes]
+        y_pred = stats.mode(k_nearest_label, axis=1)[0].squeeze()
+
         return y_pred
 
     def score(self, X, y):
@@ -115,7 +140,10 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        return 0.
+        y_pred = self.predict(X)
+        score = np.mean(y_pred == y)
+
+        return score/len(y)
 
 
 class MonthlySplit(BaseCrossValidator):
@@ -155,7 +183,14 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        return 0
+        X = X.reset_index()
+        
+        if not isinstance(X[self.time_col][0], pd.Timestamp):
+            raise ValueError("'time_col' collumn is not the type of datetime")
+
+        n_splits = X[self.time_col].dt.to_period('M') - 1
+
+        return n_splits
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
