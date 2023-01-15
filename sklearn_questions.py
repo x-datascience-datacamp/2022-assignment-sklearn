@@ -74,7 +74,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
-        self.X_ , self.y_ = check_X_y(X, y)
+        self.X_, self.y_ = check_X_y(X, y)
         self.classes_ = unique_labels(self.y_)
         check_classification_targets(self.y_)
         return self
@@ -95,7 +95,8 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         check_is_fitted(self)
         X = check_array(X)
         distance = pairwise_distances(X, self.X_)
-        nearest_arg = np.argpartition(distance, self.n_neighbors, axis=1)[:, :self.n_neighbors]
+        nearest_arg = np.argpartition(distance,
+                self.n_neighbors, axis=1)[:, :self.n_neighbors]
         y_pred = stats.mode(self.y_[nearest_arg], axis=1)[0].ravel()
         return y_pred
 
@@ -153,7 +154,7 @@ class MonthlySplit(BaseCrossValidator):
         """
         X = X.reset_index()
         if not np.issubdtype(X[self.time_col].dtype, np.datetime64):
-            raise ValueError('Not type datetime.')       
+            raise ValueError('Not type datetime.')
         months_period = X[self.time_col]
         months_period = months_period.dt.to_period('M')
         return months_period.nunique() - 1
