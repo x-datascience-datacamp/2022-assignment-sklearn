@@ -54,7 +54,7 @@ from sklearn.base import ClassifierMixin
 from sklearn.model_selection import BaseCrossValidator
 from sklearn.utils.validation import check_X_y, check_is_fitted
 from sklearn.utils.validation import check_array
-# from sklearn.utils.multiclass import check_classification_targets
+from sklearn.utils.multiclass import check_classification_targets
 from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.utils.multiclass import unique_labels
 from scipy import stats
@@ -81,10 +81,12 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
+        X = check_array(X)
         # Check that X and y have correct shape
         X, y = check_X_y(X, y)
         # Store the classes seen during fit
         self.classes_ = unique_labels(y)
+        check_classification_targets(y)
         self.X_ = X
         self.y_ = y
         return self
