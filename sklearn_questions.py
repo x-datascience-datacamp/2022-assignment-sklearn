@@ -46,7 +46,9 @@ Hints
 from sklearn.metrics.pairwise import pairwise_distances
 
 to compute distances between 2 sets of samples.
+
 """
+
 import numpy as np
 import pandas as pd
 
@@ -71,7 +73,9 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self.n_neighbors = n_neighbors
 
     def fit(self, X, y):
-        """Fitting function.
+
+        """
+        Fitting function.
          Parameters
         ----------
         X : ndarray, shape (n_samples, n_features)
@@ -83,6 +87,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
+
         # Check that X and y have correct shape
         X, y = check_X_y(X, y)
         self.X_ = X
@@ -94,6 +99,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         return self
 
     def predict(self, X):
+
         """
         Predict function.
         Parameters
@@ -105,7 +111,9 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         ----------
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
+
         """
+
         y_pred = np.zeros(X.shape[0])
         return y_pred
         # Check if fit has been called
@@ -126,7 +134,9 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         return np.array(y_pred)
 
     def score(self, X, y):
+
         """
+
         Calculate the score of the prediction.
         Parameters
         ----------
@@ -138,7 +148,9 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         ----------
         score : float
             Accuracy of the model computed for the (X, y) pairs.
+
         """
+
         return 0.
         if len(y) == 0:
             raise ValueError
@@ -151,6 +163,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
 
 
 class MonthlySplit(BaseCrossValidator):
+
     """
     CrossValidator based on monthly split.
     Split data based on the given `time_col` (or default to index). Each split
@@ -200,7 +213,9 @@ class MonthlySplit(BaseCrossValidator):
         return len(X.resample('M', on=self.time_col)) - 1
 
     def split(self, X, y, groups=None):
-        """Generate indices to split data into training and test set.
+
+        """
+        Generate indices to split data into training and test set.
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
@@ -216,6 +231,7 @@ class MonthlySplit(BaseCrossValidator):
             The training set indices for that split.
         idx_test : ndarray
             The testing set indices for that split.
+
         """
 
         n_samples = X.shape[0]
