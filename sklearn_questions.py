@@ -201,7 +201,6 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-
         n_splits = self.get_n_splits(X, y, groups)
         if n_splits < 2:
             raise ValueError("Not enough data to generate splits")
