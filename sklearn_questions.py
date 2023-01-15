@@ -48,7 +48,6 @@ from sklearn.metrics.pairwise import pairwise_distances
 to compute distances between 2 sets of samples.
 """
 import numpy as np
-import pandas as pd
 
 from sklearn.base import BaseEstimator
 from sklearn.base import ClassifierMixin
@@ -82,6 +81,12 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
+        X, y = check_X_y(X, y)
+        self.X_ = X
+        self.y_ = y
+        self.n_features_in_ = X.shape[1]
+        check_classification_targets(y)
+
         return self
 
     def predict(self, X):
@@ -97,7 +102,13 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
+        check_is_fitted(self)
+        X = check_array(X)
         y_pred = np.zeros(X.shape[0])
+        for n in range(len(X)):
+            dist = pairwise_distances(self.X_, X[:n])
+            indices = np.argsort(dist)[: self.n_neighbors]
+            y_pred[n] = max(self.y_[indices])
         return y_pred
 
     def score(self, X, y):
@@ -115,7 +126,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        return 0.
+        return np.sum((self.predict(X) == y)/len(y))
 
 
 class MonthlySplit(BaseCrossValidator):
@@ -166,7 +177,7 @@ class MonthlySplit(BaseCrossValidator):
             Training data, where `n_samples` is the number of samples
             and `n_features` is the number of features.
         y : array-like of shape (n_samples,)
-            Always ignored, exists for compatibility.
+            Always ignored, e xists for compatibility.
         groups : array-like of shape (n_samples,)
             Always ignored, exists for compatibility.
 
