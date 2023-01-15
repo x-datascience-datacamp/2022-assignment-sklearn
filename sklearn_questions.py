@@ -82,6 +82,12 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
+        X, y = check_X_y(X, y)
+        check_classification_targets(y)
+        self.X_train_ = X
+        self.y_train_ = y
+        self.classes_ = np.unique(y)
+        self.n_features_in_ = X.shape[1]
         return self
 
     def predict(self, X):
@@ -97,8 +103,20 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
-        y_pred = np.zeros(X.shape[0])
-        return y_pred
+        fit_attr = ["X_train_", "y_train_", "classes_", "n_features_in_"]
+        check_is_fitted(self, fit_attr)
+        check_array(X)
+        y_pred = []
+        distances = pairwise_distances(self.X_train_, X)
+        nearest_neighbors_indices = np.argsort(distances, axis=0)[
+            : self.n_neighbors, :
+            ]
+
+        for x_nn in nearest_neighbors_indices.T:
+            labels = np.array(self.y_train_[x_nn])
+            unique_labels, counts = np.unique(labels, return_counts=True)
+            y_pred.append(unique_labels[np.argmax(counts)])
+        return np.array(y_pred)
 
     def score(self, X, y):
         """Calculate the score of the prediction.
@@ -115,7 +133,12 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        return 0.
+        check_is_fitted(self, ["X_train_", "y_train_", "classes_"])
+        check_X_y(X, y)
+        check_classification_targets(y)
+        y_pred = self.predict(X)
+
+        return np.mean(y == y_pred)
 
 
 class MonthlySplit(BaseCrossValidator):
@@ -134,7 +157,7 @@ class MonthlySplit(BaseCrossValidator):
         To use the index as column just set `time_col` to `'index'`.
     """
 
-    def __init__(self, time_col='index'):  # noqa: D107
+    def __init__(self, time_col="index"):  # noqa: D107
         self.time_col = time_col
 
     def get_n_splits(self, X, y=None, groups=None):
@@ -155,7 +178,13 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        return 0
+        X_grouped = X.copy()
+        if self.time_col != "index":
+            X_grouped = X.set_index(self.time_col)
+        else:
+            X_grouped = X.copy()
+        X_grouped = X_grouped.resample("M").mean()
+        return X_grouped.shape[0] - 1
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -177,12 +206,32 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-
-        n_samples = X.shape[0]
+        X_indiced = X.copy()
+        if isinstance(X, pd.core.series.Series):
+            X_indiced = pd.DataFrame(X)
+        if self.time_col != "index":
+            X_indiced = X_indiced.set_index(self.time_col)
+            datetime_index_type = pd.core.indexes.datetimes.DatetimeIndex
+            if not isinstance(X_indiced.index, datetime_index_type):
+                raise ValueError(
+                    "The column time_col should be at the datetime format."
+                )
+        else:
+            X_indiced = X_indiced.copy()
+        print(self.time_col)
+        X_grouped_dates = X_indiced.resample("M").mean().sort_index().index
+        X_indiced["idx"] = np.arange(X.shape[0])
         n_splits = self.get_n_splits(X, y, groups)
+
         for i in range(n_splits):
-            idx_train = range(n_samples)
-            idx_test = range(n_samples)
-            yield (
-                idx_train, idx_test
-            )
+
+            idx_train = X_indiced[
+                (X_indiced.index.month == X_grouped_dates[i].month)
+                & (X_indiced.index.year == X_grouped_dates[i].year)
+            ]["idx"].values
+            idx_test = X_indiced[
+                (X_indiced.index.month == X_grouped_dates[i + 1].month)
+                & (X_indiced.index.year == X_grouped_dates[i + 1].year)
+            ]["idx"].values
+
+            yield (idx_train, idx_test)
