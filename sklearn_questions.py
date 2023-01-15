@@ -210,17 +210,20 @@ class MonthlySplit(BaseCrossValidator):
         """
 
         n_samples = X.shape[0]
+
         n_splits = self.get_n_splits(X, y, groups)
         for i in range(n_splits):
             idx_train = range(n_samples)
             idx_test = range(n_samples)
 
             idx_train = np.where(
-                ((self.months.year == self.sort_month[i].year) & (self.months.month == self.sort_month[i].month))
+                ((self.months.year == self.sort_month[i].year)
+                 & (self.months.month == self.sort_month[i].month))
             )
 
             idx_test = np.where(
-                ((self.months.year == self.sort_month[i+1].year) & (self.months.month == self.sort_month[i+1].month))
+                ((self.months.year == self.sort_month[i+1].year)
+                 & (self.months.month == self.sort_month[i+1].month))
             )
             yield (
                 idx_train, idx_test
