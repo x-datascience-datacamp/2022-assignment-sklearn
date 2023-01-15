@@ -61,7 +61,6 @@ from sklearn.utils.validation import check_X_y, check_is_fitted
 from sklearn.utils.validation import check_array
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.metrics.pairwise import pairwise_distances
-from pandas.core.dtypes.common import is_datetime64_any_dtype
 
 
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
@@ -179,9 +178,6 @@ class MonthlySplit(BaseCrossValidator):
 
         if type(X.index) != pd.RangeIndex:
             X = X.reset_index()
-
-        if not is_datetime64_any_dtype(X[self.time_col]):
-            raise ValueError('datetime')
 
         return len(X.resample('M', on=self.time_col)) - 1
 
