@@ -214,7 +214,10 @@ class MonthlySplit(BaseCrossValidator):
 
         X_resampled = X.resample('M', on=self.time_col)
 
-        idx_month = X_resampled.index
+        def index_array(array):
+            return array.index
+
+        idx_month = X_resampled.apply(index_array)
 
         for i in range(n_splits):
             idx_train = idx_month.iloc[i]
