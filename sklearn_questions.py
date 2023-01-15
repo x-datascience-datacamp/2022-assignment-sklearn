@@ -201,7 +201,7 @@ class MonthlySplit(BaseCrossValidator):
             The testing set indices for that split.
         """
         X1 = X if self.time_col == 'index' else X.set_index(self.time_col)
-        if not(X1.index.dtype == "datetime64[ns]"):
+        if not (X1.index.dtype == "datetime64[ns]"):
             raise ValueError('datetime')
         n_splits = self.get_n_splits(X, y, groups)
         dates = self.dates
