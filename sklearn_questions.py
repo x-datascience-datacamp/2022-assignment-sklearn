@@ -48,7 +48,6 @@ from sklearn.metrics.pairwise import pairwise_distances
 to compute distances between 2 sets of samples.
 """
 import numpy as np
-import pandas as pd
 
 from sklearn.base import BaseEstimator
 from sklearn.base import ClassifierMixin
@@ -85,11 +84,8 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         X, y = check_X_y(X, y)
         self.X_ = X
         self.y_ = y
-        self.n_features_in_= X.shape[1]
+        self.n_features_in_ = X.shape[1]
         check_classification_targets(y)
-
-        
-
 
         return self
 
@@ -109,12 +105,11 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         check_is_fitted(self)
         X = check_array(X)
         y_pred = np.zeros(X.shape[0])
-        for n in range(len(X)) :
-                dist = pairwise_distances(self.X_,X[:n])
-                indices = np.argsort(dist)[ : self.n_neighbors]
-                y_pred[n] = max(list(self.y_[indices]))
+        for n in range(len(X)):
+            dist = pairwise_distances(self.X_, X[:n])
+            indices = np.argsort(dist)[: self.n_neighbors]
+            y_pred[n] = max(list(self.y_[indices]))
         return y_pred
-       
 
     def score(self, X, y):
         """Calculate the score of the prediction.
@@ -131,7 +126,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        return np.sum((self.predict(X)==y)/len(y))
+        return np.sum((self.predict(X) == y)/len(y))
 
 
 class MonthlySplit(BaseCrossValidator):
