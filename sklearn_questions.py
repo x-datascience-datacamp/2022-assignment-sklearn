@@ -49,6 +49,7 @@ to compute distances between 2 sets of samples.
 """
 import numpy as np
 import pandas as pd
+import scipy.stats as stats
 
 from sklearn.base import BaseEstimator
 from sklearn.base import ClassifierMixin
@@ -82,6 +83,15 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
+        # Check that X and y have correct shape
+        self.X_, self.y_ = check_X_y(X, y)
+        # Check that y has correct type
+        check_classification_targets(self.y_)
+        # Store the classes seen during fit
+        self.classes_ = np.unique(self.y_)
+        # Store the number of features seen during fit
+        self.n_features_in_ = self.X_.shape[1]
+
         return self
 
     def predict(self, X):
@@ -97,7 +107,15 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
-        y_pred = np.zeros(X.shape[0])
+        # Check if fit has been called
+        check_is_fitted(self)
+        # Input validation
+        X = check_array(X)
+        distances = pairwise_distances(self.X_, X)
+        indices = np.argpartition(distances, kth=self.n_neighbors,
+                                  axis=0)[:self.n_neighbors, :]
+        y_pred = self.y_[indices]
+        y_pred = stats.mode(y_pred, axis=0)[0].squeeze()
         return y_pred
 
     def score(self, X, y):
@@ -115,7 +133,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        return 0.
+        return np.mean(self.predict(X) == y)
 
 
 class MonthlySplit(BaseCrossValidator):
@@ -155,7 +173,12 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        return 0
+        X = X.reset_index()
+        if not isinstance(X[self.time_col].iloc[0], pd.Timestamp):
+            raise ValueError('the index column must be datetime type')
+        X = X.set_index(self.time_col)
+
+        return len(X.resample('M').nunique())-1
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -177,12 +200,32 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
+        if self.time_col != 'index':
+            X = X.set_index(self.time_col)
 
-        n_samples = X.shape[0]
-        n_splits = self.get_n_splits(X, y, groups)
-        for i in range(n_splits):
-            idx_train = range(n_samples)
-            idx_test = range(n_samples)
+        if not pd.api.types.is_datetime64_any_dtype(X.index):
+            raise ValueError('the index column must be datetime type')
+        splits = []
+        zip_date = zip(X.index.month, X.index.year)
+        possibilities = {(month, year) for (month, year) in zip_date}
+        possibilities = set(possibilities)
+        for possibility in possibilities:
+            (month, year) = possibility
+            if month == 12:
+                if (1, year + 1) in possibilities:
+                    splits.append([(month, year), (1, year+1)])
+            else:
+                if (month + 1, year) in possibilities:
+                    splits.append([(month, year), (month+1, year)])
+        splits = np.array([[a, b, c, d] for [(a, b), (c, d)] in splits])
+        splits = splits[np.lexsort((splits[:, 1], splits[:, 0]))]
+        for split in splits:
+            month1, year1 = split[0], split[1]
+            month2, year2 = split[2], split[3]
+            mask1 = (X.index.month == month1) & (X.index.year == year1)
+            mask2 = (X.index.month == month2) & (X.index.year == year2)
+            idx_test = np.argwhere(mask1).flatten()
+            idx_train = np.argwhere(mask2).flatten()
             yield (
-                idx_train, idx_test
-            )
+                idx_test, idx_train
+                  )
