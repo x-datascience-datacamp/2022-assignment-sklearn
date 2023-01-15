@@ -80,12 +80,12 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
-        X = check_array(X)
         X, y = check_X_y(X, y)
         check_classification_targets(y)
-        self.classes_ = np.unique(y)
         self.X_ = X
         self.y_ = y
+        self.classes_ = np.unique(y)
+        self.n_features_in_ = X.shape[1]
         return self
 
     def predict(self, X):
@@ -131,12 +131,8 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         """
         check_is_fitted(self)
         X = check_array(X)
-        sc = 0
         y_pred = self.predict(X)
-        for i in range(X.shape[0]):
-            if y_pred[i] == y[i]:
-                sc += 1
-        return sc/X.shape[0]
+        return np.mean(y_pred == y)
 
 
 class MonthlySplit(BaseCrossValidator):
