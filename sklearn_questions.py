@@ -207,7 +207,6 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-
         if type(X) == pd.Series:
             X = X.to_frame()
 
