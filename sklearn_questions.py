@@ -88,6 +88,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self.X_ = X
         self.y_ = y
         self.classes_ = np.unique(y)
+        self.n_features_in_=X.shape[1]
         return self
 
     def predict(self, X):
@@ -109,7 +110,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         print(self.y_)
         for n, i in enumerate(X):
             dist = pairwise_distances(self.X_, [i]).flatten()
-            idx = np.argsort(dist)[:self.n_neighbors]
+            idx = np.argsort(dist)[: self.n_neighbors]
             y_pred[n] = max(list(self.y_[idx]), key=list(self.y_[idx]).count)
 
         return y_pred
@@ -130,7 +131,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
             Accuracy of the model computed for the (X, y) pairs.
         """
         y_pred = self.predict(X)
-        score = (y_pred == y)
+        score = y_pred == y
         return np.sum(score) / len(y)
 
 
@@ -171,13 +172,13 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        if self.time_col != 'index' : 
+        if self.time_col != "index":
             X = X.set_index(self.time_col)
 
-        if type(X.index) != pd.core.indexes.datetimes.DatetimeIndex :
-            raise ValueError('not a datetime')
-        
-        return X.resample('M').count().shape[0] - 1 
+        if type(X.index) != pd.core.indexes.datetimes.DatetimeIndex:
+            raise ValueError("not a datetime")
+
+        return X.resample("M").count().shape[0] - 1
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -200,13 +201,24 @@ class MonthlySplit(BaseCrossValidator):
             The testing set indices for that split.
         """
         n_splits = self.get_n_splits(X, y, groups)
-        
-        if self.time_col != 'index' : 
+
+        if self.time_col != "index":
             X = X.set_index(self.time_col)
 
         for i in range(n_splits):
             curr_month = X.index.min() + relativedelta(months=i)
             nxt_month = curr_month + relativedelta(months=1)
-            idx_curr, idx_nxt = X[(X.index.month == curr_month.month) & (X.index.year == curr_month.year)].index, X[(X.index.month == nxt_month.month) & (X.index.year == nxt_month.year)].index
-            idx_train, idx_test = [X.index.get_loc(i) for i in idx_curr], [X.index.get_loc(i) for i in idx_nxt]
+            idx_curr, idx_nxt = (
+                X[
+                    (X.index.month == curr_month.month)
+                    & (X.index.year == curr_month.year)
+                ].index,
+                X[
+                    (X.index.month == nxt_month.month)
+                    & (X.index.year == nxt_month.year)
+                ].index,
+            )
+            idx_train, idx_test = [X.index.get_loc(i) for i in idx_curr], [
+                X.index.get_loc(i) for i in idx_nxt
+            ]
             yield (idx_train, idx_test)
