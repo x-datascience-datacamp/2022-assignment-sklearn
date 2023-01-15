@@ -95,6 +95,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         return self
 
     def predict(self, X):
+
         """
         Predict function.
 
@@ -170,7 +171,6 @@ class MonthlySplit(BaseCrossValidator):
 
     def get_n_splits(self, X, y=None, groups=None):
         """
-
         Return the number of splitting iterations in the cross-validator.
 
         Parameters
@@ -198,7 +198,6 @@ class MonthlySplit(BaseCrossValidator):
 
     def split(self, X, y, groups=None):
         """
-
         Generate indices to split data into training and test set.
 
         Parameters
