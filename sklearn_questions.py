@@ -206,7 +206,6 @@ class MonthlySplit(BaseCrossValidator):
 
         if not pd.api.types.is_datetime64_any_dtype(X.index):
             raise ValueError('the index column must be datetime type')
-
         splits = []
         zip_date = zip(X.index.month, X.index.year)
         possibilities = {(month, year) for (month, year) in zip_date}
