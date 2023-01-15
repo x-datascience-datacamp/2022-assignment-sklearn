@@ -55,10 +55,12 @@ from sklearn.base import ClassifierMixin
 
 from sklearn.model_selection import BaseCrossValidator
 
+from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_X_y, check_is_fitted
 from sklearn.utils.validation import check_array
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.metrics.pairwise import pairwise_distances
+from collections import Counter
 
 
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
@@ -82,6 +84,14 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
+        X, y = check_X_y(X, y)
+
+        self.X_ = X
+        self.y_ = y
+
+        self.n_features_in_ = X.shape[1]
+        self.classes_ = unique_labels(y)
+
         return self
 
     def predict(self, X):
@@ -97,7 +107,21 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
-        y_pred = np.zeros(X.shape[0])
+        check_is_fitted(self)
+
+        X = check_array(X)
+
+        dist = pairwise_distances(X, self.X_)
+        nearest_neighbors = np.argsort(dist, axis=1)[:, : self.n_neighbors]
+        y_pred = np.array(
+            [
+                Counter(self.y_[nearest_neighbors[k]]).most_common(1)[0][0]
+                for k in range(len(nearest_neighbors))
+            ]
+        )
+
+        check_classification_targets(y_pred)
+
         return y_pred
 
     def score(self, X, y):
@@ -115,7 +139,10 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        return 0.
+        y_pred = self.predict(X)
+        score = (len(y) - np.sum(np.abs(y_pred - y))) / len(y)
+
+        return score
 
 
 class MonthlySplit(BaseCrossValidator):
@@ -134,7 +161,7 @@ class MonthlySplit(BaseCrossValidator):
         To use the index as column just set `time_col` to `'index'`.
     """
 
-    def __init__(self, time_col='index'):  # noqa: D107
+    def __init__(self, time_col="index"):  # noqa: D107
         self.time_col = time_col
 
     def get_n_splits(self, X, y=None, groups=None):
@@ -155,7 +182,13 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        return 0
+        X = X.reset_index()
+        time_col = X[self.time_col]
+
+        if not isinstance(time_col[0], pd.Timestamp):
+            raise ValueError(f"{time_col} is not a datetime")
+
+        return time_col.dt.to_period("M").nunique() - 1
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -177,12 +210,29 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
+        # if type(X) == pd.Series:
+        #     X = X.to_frame()
+        # X = X.reset_index()
+        # n_splits = self.get_n_splits(X, y, groups)
+        # X_resampled = X.resample('M', on=self.time_col)
 
-        n_samples = X.shape[0]
+        # def index_array(array):
+        #     return array.index
+
+        # idx_month = X_resampled.apply(index_array)
+
+        # for i in range(n_splits):
+        #     idx_train = idx_month.iloc[i]
+        #     idx_test = idx_month.iloc[i+1]
+
+        # yield (idx_train.values, idx_test.values)
         n_splits = self.get_n_splits(X, y, groups)
+        X = X.reset_index()
+        time_col = X[self.time_col]
+        time_col = time_col.dt.to_period("M")
+        months = np.sort(time_col.unique())
+
         for i in range(n_splits):
-            idx_train = range(n_samples)
-            idx_test = range(n_samples)
-            yield (
-                idx_train, idx_test
-            )
+            idx_train = X[time_col == months[i]].index.to_list()
+            idx_test = X[time_col == months[i + 1]].index.to_list()
+            yield (idx_train, idx_test)
