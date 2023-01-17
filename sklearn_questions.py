@@ -86,8 +86,8 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         """
         X, y = check_X_y(X, y)
         check_classification_targets(y)
-        self.X_train = X
-        self.y_train = y
+        self.X_ = X
+        self.y_ = y
         self.classes_ = unique_labels(y)
         self.n_features_in_ = X.shape[1]
         return self
@@ -108,9 +108,9 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         check_is_fitted(self)
         X = check_array(X)
         y_pred = np.zeros(X.shape[0])
-        distances = np.argsort(pairwise_distances(X, self.X_train))
-        idx = distances[:, :self.n_neighbors]
-        y_pred = self.y_train[idx]
+        sorted_dist = np.argsort(pairwise_distances(X, self.X_))
+        closests_idx = sorted_dist[:, :self.n_neighbors]
+        y_pred = self.y_[closests_idx]
         return stats.mode(y_pred, axis=1)[0].squeeze()
 
     def score(self, X, y):
@@ -129,8 +129,8 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
             Accuracy of the model computed for the (X, y) pairs.
         """
         y_pred = self.predict(X)
-        accuracy = np.mean(y_pred == y)
-        return accuracy
+        acc = np.sum(y_pred == y)/y.shape[0]
+        return acc
 
 
 class MonthlySplit(BaseCrossValidator):
