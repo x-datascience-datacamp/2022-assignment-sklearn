@@ -167,8 +167,7 @@ class MonthlySplit(BaseCrossValidator):
         X = X.reset_index()
         col_dt = X[self.time_col]
         if not isinstance(X[self.time_col][0], pd.Timestamp):
-            raise ValueError(f"Column type {col_dt.dtype} is\
-                             not of datetime format")
+            raise ValueError("Not a datetime type")
         return col_dt.dt.to_period("M").nunique() - 1
 
     def split(self, X, y, groups=None):
@@ -194,9 +193,12 @@ class MonthlySplit(BaseCrossValidator):
 
         X = X.reset_index()
         n_splits = self.get_n_splits(X, y, groups)
-        idx_month = X.resample('M', on=self.time_col)\
-            .apply(lambda array: array.index)
+        date = X[self.time_col]
+        period = date.dt.to_period('M')
+        m = np.sort(period.unique())
         for i in range(n_splits):
-            idx_train = idx_month.iloc[i]
-            idx_test = idx_month.iloc[i+1]
-            yield (idx_train.values, idx_test.values)
+            idx_train = X[period == m[i]].index.tolist()
+            idx_test = X[period == m[i+1]].index.tolist()
+            yield (
+                idx_train, idx_test
+            )
