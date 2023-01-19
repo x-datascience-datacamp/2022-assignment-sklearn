@@ -27,7 +27,7 @@ The data to split should contain the index or one column in
 datatime format. Then the aim is to split the data between train and test
 sets when for each pair of successive months, we learn on the first and
 predict of the following. For example if you have data distributed from
-november 2020 to march 2021, you have have 4 splits. The first split
+november 2020 to march 2021, you will have 4 splits. The first split
 will allow to learn on november data and predict on december data, the
 second split to learn december and predict on january etc.
 
@@ -48,17 +48,18 @@ from sklearn.metrics.pairwise import pairwise_distances
 to compute distances between 2 sets of samples.
 """
 import numpy as np
-import pandas as pd
 
 from sklearn.base import BaseEstimator
 from sklearn.base import ClassifierMixin
 
 from sklearn.model_selection import BaseCrossValidator
 
-from sklearn.utils.validation import check_X_y, check_is_fitted
-from sklearn.utils.validation import check_array
-from sklearn.utils.multiclass import check_classification_targets
+from sklearn.utils.validation import check_X_y, check_is_fitted, check_array
+from sklearn.utils.multiclass import check_classification_targets, \
+                                     unique_labels
 from sklearn.metrics.pairwise import pairwise_distances
+
+from scipy.stats import mode
 
 
 class KNearestNeighbors(BaseEstimator, ClassifierMixin):
@@ -82,6 +83,12 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
+        X, y = check_X_y(X, y)
+        check_classification_targets(y)
+        self.X_train_ = X
+        self.y_train_ = y
+        self.classes_ = unique_labels(y)
+        self.n_features_in_ = X.shape[1]
         return self
 
     def predict(self, X):
@@ -97,7 +104,14 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
-        y_pred = np.zeros(X.shape[0])
+        check_is_fitted(self)
+        X = check_array(X)
+        distance = pairwise_distances(self.X_train_, X, metric='euclidean')
+        neighbor_ind = np.argpartition(distance,
+                                       self.n_neighbors,
+                                       0)[:self.n_neighbors, :]
+        y_neighbor = self.y_train_[neighbor_ind]
+        y_pred = mode(y_neighbor, axis=0, keepdims=False).mode
         return y_pred
 
     def score(self, X, y):
@@ -115,7 +129,10 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         score : float
             Accuracy of the model computed for the (X, y) pairs.
         """
-        return 0.
+        X, y = check_X_y(X, y)
+        y_pred = self.predict(X)
+        acc = (y_pred == y).sum()/y.shape[0]
+        return acc
 
 
 class MonthlySplit(BaseCrossValidator):
@@ -155,7 +172,13 @@ class MonthlySplit(BaseCrossValidator):
         n_splits : int
             The number of splits.
         """
-        return 0
+        X = X.reset_index()
+        time_col = X[self.time_col]
+        if not np.issubdtype(time_col.dtype, np.datetime64):
+            raise ValueError(
+                f'expect np.datetime64 but received {time_col.dtype}')
+        n_splits = time_col.dt.to_period('M').nunique() - 1
+        return n_splits
 
     def split(self, X, y, groups=None):
         """Generate indices to split data into training and test set.
@@ -177,12 +200,13 @@ class MonthlySplit(BaseCrossValidator):
         idx_test : ndarray
             The testing set indices for that split.
         """
-
-        n_samples = X.shape[0]
         n_splits = self.get_n_splits(X, y, groups)
+        X_ = X.reset_index().sort_values(self.time_col)
+        months = X_[self.time_col].dt.to_period('M')
+        unique = months.unique()
         for i in range(n_splits):
-            idx_train = range(n_samples)
-            idx_test = range(n_samples)
+            idx_train = X_[months == unique[i]].index.to_list()
+            idx_test = X_[months == unique[i+1]].index.to_list()
             yield (
                 idx_train, idx_test
             )
