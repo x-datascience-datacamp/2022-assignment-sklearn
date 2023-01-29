@@ -1,4 +1,4 @@
-"""sklearn questions"""
+"""sklearn questions."""
 
 from abc import ABC
 
