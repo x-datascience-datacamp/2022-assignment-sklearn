@@ -1,3 +1,5 @@
+"""sklearn questions"""
+
 from abc import ABC
 
 import numpy as np
@@ -65,9 +67,17 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
         label_k_neigh = self.y_train_[ind_k_neigh]
         axis = 1
         u, indices = np.unique(label_k_neigh, return_inverse=True)
-        y_pred = u[np.argmax(np.apply_along_axis(np.bincount, axis,
-                                                 indices.reshape(label_k_neigh.shape),
-                                                 None, np.max(indices) + 1), axis=axis)]
+        y_pred = u[
+            np.argmax(
+                np.apply_along_axis(
+                    np.bincount,
+                    axis,
+                    indices.reshape(label_k_neigh.shape),
+                    None,
+                    np.max(indices) + 1
+                ),
+                axis=axis)
+        ]
         return y_pred
 
     def score(self, X, y):
